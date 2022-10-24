@@ -1,0 +1,93 @@
+---
+title: "Ideias Trabalho Final - Labor II"
+author: "Bernardo Duque"
+date: "2022-09-05"
+output: 
+  pdf_document:
+    toc: F
+    number_sections: F
+fontsize: 12pt
+header-includes:
+ \usepackage{float}
+ \floatplacement{figure}{H}
+ \renewcommand{\baselinestretch}{1.5} 
+---
+```{r setup, echo = F, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center') 
+```
+ 
+# Ideias
+
+
+Crime cometido, pena (ou se foi inocentado), dados demograficos do réu (CPF, idade, raça, sexo, se tinha emprego, quanto mais informações sobre o réu melhor), juiz q julgou o caso
+
+* SISDEPEN
+
+* DPRJ
+
+* CNJ
+
+Outra ideia, RDD com quem eh detido logo antes dos 18 anos e quem é preso logo depois dos 18
+
+- **Crime, Recidivism and Employment**
+
+  - Stigma de pessoas presas e dificuldade de conseguir trabalho -> desemprego (ver Bhuller 2019 para outras referências)
+
+  - O banco de dados do SISDEPEN contém informações de todas as unidades prisionais brasileiras, incluindo dados de infraestrutura, seções internas, recursos humanos, capacidade, gestão, assistências, população prisional, perfil das pessoas presas, entre outros.
+
+  - Efeitos sobre desigualdade, sobre saúde
+  
+  - Analisar superpopulação, revoltas, leis que aumentaram emprisionamento
+  
+  - Como varia os outcomes de pessoas que cometeram crimes parecidos e foram pra penas alternativas x pessoas que foram encarceradas? (judge severity IV?)
+  
+  - Quais eram as características dos detentos antes de serem presos? Tinham coisas a perder? família, emprego, filhos para cuidar, etc
+  
+  - Cruzar com dados do ECA (jovens que foram presos depois de detidos quando menores de idade)
+  
+  - Usar base da Bia Ribeiro; conversar com Joana
+  
+    - Initial information on defendants and detention hearings was obtained from the Research Department of DPRJ and from ISP, which provided detailed information on all hearings held since the implementation of the system in September 2015
+  
+    - A broader dataset of 90,760 in flagrante delicto apprehensions made by the police in Rio de Janeiro state between January 1st 2014
+  
+    - Alguns papers: 
+    
+      - Dobbie, W., J. Goldin, and C. S. Yang (2018). The Effects of Pretrial Detention on Conviction, Future Crime, and Employment: Evidence from Randomly Assigned Judges
+      
+      - Grogger, J. (1995). The Effect of Arrests on the Employment and Earnings of Young Men
+      
+      - Kling, J. R. (2006). Incarceration Length, Employment, and Earnings.
+    
+    - Como presos são alocados para presídios? Aleatório? Se for da para explorar isso
+    
+    - Tenho dados para juízes de cada preso? 
+  
+- **Efeitos de graças concedidas a prisioneiros**
+
+  - Existem outras alem daquelas de fim de ano? 
+  
+  - Qual o efeito disso sobre o crime?)
+
+  - Ver Buonanno, P. and S. Raphael (2013). Incarceration and Incapacitation: Evidence from the 2006 Italian Collective Pardon
+
+- **Reforma trabalhista e a pejotização? **
+
+  - Quais os efeitos sobre insegurança na renda. ifood? uber? 
+
+- **Explorar a evolução da desigualdade de renda dentro do serviço público federal**
+
+- **Efeitos de eventos de grande prazo sobre a informalidade e desigualdade de renda (ex. RiR)**
+
+- **Conversa Breno Sampaio**
+
+  - Dados da receita para varias geracoes
+  
+  - Dados dos prisioneiros de todo brasil
+  
+  - Dados dos processos (penais e trabalhistas)
+  
+  - Dados do censo escolar 
+  
+  _ Todos os dados acima identificados
+ 

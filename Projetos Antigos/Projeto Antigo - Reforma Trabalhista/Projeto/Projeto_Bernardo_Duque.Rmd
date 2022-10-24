@@ -1,0 +1,112 @@
+---
+title: "**Labor Market Flexibility and Turnover**"
+subtitle: "Research Project for Labor II - PUC-Rio"
+author: "Bernardo Duque"
+date: "October 07, 2022"
+output:
+  pdf_document:
+    toc: F
+    number_sections: T
+fontsize: 12pt
+header-includes:
+ \usepackage{float}
+ \floatplacement{figure}{H}
+ \renewcommand{\baselinestretch}{1.5} 
+ \usepackage{booktabs}
+ \addtolength{\skip\footins}{1pc}
+ \usepackage{tabularx}
+ \usepackage{makecell}
+ \usepackage{setspace}
+bibliography: export.bib
+link-citations: true
+nocite: '@*'
+---
+```{r setup, echo = F, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center')
+# 2pc plus 5pt
+#csl: csl_tipo.csl
+```
+
+# Introduction
+
+
+
+The following section will discuss more about the data that will be used and its limitations, and the subsequent section will briefly discuss the empirical strategy that will probably be used. The last section will conclude presenting a roadmap for this project.
+
+# Data
+
+The main database I will use is PNADC (*Pesquisa Nacional por Amostra de Domicílios Contínua*)
+
+# The 2017 Labor Market Reform
+
+Inspired by @pb99, Table \ref{table:1} summaries the main changes relative to the 2017 labor market reform in Brazil.^[Information was taken from the bill itself and from the official [senate website](https://www12.senado.leg.br/noticias/materias/2019/05/02/aprovada-em-2017-reforma-trabalhista-alterou-regras-para-flexibilizar-o-mercado-de-trabalho)]
+
+
+\begin{table}[!htbp]
+  \centering
+    \begin{tabularx}{\textwidth}{XX}
+    \toprule
+    \textbf{Before}     & \textbf{After} \\
+    \midrule
+    1 - Legislation is hierarchical in relation to collective agreements made directly by unions/employees and employers         & 1 - Some topics may be negotiated between employers and employees, since basic rights are respect such as  \\
+    2 - Maximum working hours per month = 200 hours                       & 2 - Maximum working hours per month = 200 hours \\
+    3 - Maximum working hours per week = 44 hours  hours                  & 3 - Maximum working hours per week = 44 hours  hours \\
+    4 - Maximum daily journey for continuous work shift = 8 hours          & 4 - Maximum daily journey for continuous work shift = 12 hours, since it is followed by a 36 hours of rest \\
+    5 - Mandatory union dues & 5 - Non-mandatory union dues \\
+    6 - \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ---                   & 6 -  New modality of  job called ijntermitent: with proportional benefits and salary of at least the minimum wage \\
+    7 - Working hours considered every minute while employees were available to employers & 7 - Rest, eating, studying, personal hygiene and other tasks not directly related to job description are not considered for working shifts  \\
+  8 - Previous Notice  e demissao    & 8 -     \\
+  9 -  Pain and suffering compensations was defined by the judge    & 9 - Pain and suffering compensations have a ceiling for some type of OFFENSES. Severe offenses are limited to 50x the salary of the employee    \\
+  10 - Outsourcing    &     10 -   \\
+  11 - Pregnancy     & 11 -    \\
+  12 - Recisão do contrato     &      \\
+  13 - Açoes na justica      &     \\
+  14 - Multa    &     \\
+  15 - Representacao (sindical)        &      \\
+  16- Validade dos acordos coletivos     &       \\
+    \bottomrule
+    \end{tabularx}%
+  \caption{Reform Changes}
+\label{table:1}
+\end{table}
+
+# Empirical Strategy
+
+The empirical strategy will closely follow two studies. The first was conducted by @pb99 to analyse the effects of new dismissal rules -- introduced by the Brazilian Constitution in 1988 -- on the labor market turnover. The second one is @kugler, that tried to answer tha same question in the context of the colombian labour market reform.
+
+Hence, I will apply a *diff-in-diff* design, using the formal labor market outcomes as the treatment group and the informal labor market  Therefore I intend to estimate:
+
+\begin{equation}
+arrest_{i} = \gamma_0 + \gamma_1severity_{ij} + \gamma_2X_i + u_i
+\label{eq:1}
+\end{equation}
+
+\begin{equation}
+y_i = \beta_0 + \beta_1\hat{arrest_i} + \beta_3X_i + \varepsilon_i
+\label{eq:2}
+\end{equation}
+
+Where (\ref{eq:1}) represents the first stage and (\ref{eq:2}) the second stage; $arrest_i$ is a dummy with value equal to one if the individual was convicted in a first-degree court^[Used as proxy for being arrested.]; $severity_{ij}$ represents the severity of judge $j$ allocated to individual $i$; $y_i$ are the outcomes of interest; and $X_i$ are controls. The outcomes of interest are employment, wages and perhaps recidivism.
+
+The two hypothesis for identification are the usual IV ones. The relevance condition will be tested via equation (\ref{eq:1}) and the exclusion condition will be satisfied if in fact the allocation of judges to cases are random. I will have to talk to a few Courts of Justice to confirm that this is the case. I would also like to run an heterogeneity analysis by type of crime.
+
+# Roadmap
+
+Table \ref{table:2} describes the planning of the next steps in order to complete this research.
+
+\begin{table}[H]
+\centering \begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Activity}                                   & \textbf{Date}            \\ \midrule
+Finish literature review and institutional readings & September 20 - October 10  \\
+Data collection and data cleaning                   & September 20 - November 01 \\
+Descriptive statistics and IV estimation            & November 02 - November 12  \\ 
+Prepare the presentation                            & November 22 - November 28  \\
+Finish the writing                                  & November 12 - December 02  \\ \midrule
+\end{tabular}
+\caption{Next steps}
+\label{table:2}
+\end{table}
+
+
+# References 

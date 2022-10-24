@@ -1,0 +1,120 @@
+---
+title: "**Political Discrimination Whithin the Public Sector?**"
+subtitle: "**New Evidence From The Brazilian Federal Government**"
+author: | 
+  | Bernardo Duque
+  | Research Project for Labor II
+  | PUC-Rio
+date: "October 09, 2022"
+output:
+  pdf_document:
+    toc: F
+    number_sections: T
+fontsize: 12pt
+header-includes:
+ \usepackage{float}
+ \floatplacement{figure}{H}
+ \renewcommand{\baselinestretch}{1.5} 
+ \usepackage{booktabs}
+ \addtolength{\skip\footins}{1pc}
+ \usepackage{tabularx}
+ \usepackage{makecell}
+ \usepackage{setspace}
+ \usepackage{hyperref}
+ \hypersetup{
+   citecolor=blue,
+ }
+bibliography: export.bib
+link-citations: true
+nocite: '@*'
+---
+```{r setup, echo = F, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center')
+# 2pc plus 5pt
+#csl: csl_tipo.csl
+```
+
+# Introduction
+
+Governments play a huge role in the development of a country. However, although government quality has always been emphasized by economists, little evidence has been produced in relation to how its personnel affects its performance [@finan17]. More specifically, little attention has been given to how political affiliation may affect personnel composition, i.e. if political discrimination^[Although the two concepts are not exactly the same, here I will use interchangeably political discrimination and patronage, since in this context patronage is a form of political discrimination.] plays a role in selecting public sector workers.  
+
+Some channels which bureaucracy affects development have already been documented^[ See @besley21 for a review of the ties between bureaucracy and development.]. For instance, the career design matters. @xu19 found that career incentives to reach higher positions can have substantial impacts on the performance of civil servants. In times of crisis, representation is also important. In the context of the 1918 pandemics in India, @xu21 found that towns led by Indian bureaucrats had fewer deaths than the ones where British headed. Similarly, bureaucrats assigned to home states in India tend to be perceived as less effective in their performance because of higher corruption [@xu20].
+
+In relation to patronage in the public sector, evidence is more scarce worldwide, although in Brazil a few papers have been produced.
+In relation to worldwide evidence, in the context of the US, @xu22 find that ideologically misalignment between bureaucrats and political leaders leads to "morale costs" and consequently less productivity in the public sector. 
+
+In terms of Brazil, @colo20 document the existence of patronage within the public sector in the municipal level and that it leads to selection of less competent individuals.^[ This is aligned to the finds made by @neto22, that document the existence of political discrimination also in private firms in Brazil. The authors find that this discrimination leads to copartisans workers being paid more and getting promoted more often, even when underqualified, and that this may lead firms to grow less.] Their findings are partially consistent with @brollo17, that found that mayors used their discretion power to employ members of their party, although workers quality actually rose in their study. @barbosa19 also find similar results for the rise in employment of affiliated workers, but the magnitude is less severe. 
+
+However, none of them have provided evidence on the federal level, which arguably is more likely to have a more profound impact on development than the municipal level -- used by all of them --, both because of the size of the federal bureaucracy and because of its more broadly attributions. Hence, in this study I will try to address this lack of evidence and contribute to this literature.
+
+Because of the amount of data I will have to handle within a small period of time, this research project will have a descriptive approach. I will try to provide some information and insights on the following questions. 
+Has increased polarization led to political discrimination within the federal public sector? Did it lead to increased dismissals of employees affiliated to the opposing party^[I will in fact consider political coalitions in my analysis instead of party-by-party, although I can also test for heterogeneity in terms of being affiliated to the party and the coalition.] despite their stability? What is the magnitude of job turnover when there is a government change? Are appointed workers or outsourcing firms hired because of their qualification or solely because of their political affiliation or of their owners? Does this lead to inefficiency in the public sector? 
+
+This study aims to contribute to two branches of the literature. First, to the growing literature of the role of politics in the the public sector labor market. Second, more generally to the broad literature of discrimination in the labor market and more specifically to discrimination in the public sector labor market.
+
+The following section will provide some guidelines to describe the context of the study. Next, I will discuss more about the data that will be used, and the subsequent section will briefly discuss the empirical strategy. The last section will conclude presenting a roadmap for this project.
+
+# Institutional Context
+
+\label{Section 2}
+
+## The Public Sector in Brazil
+
+In this section I will first detail the most important aspects of the public sector in Brazil. I will discuss employment stability, reallocation within the public sector, the type of hiring (public examinations x appointment), the three branches of power and federalism in Brazil.
+
+## The Electoral Cycles and Polarization
+
+Next, I will explain how elections work in Brazil and discuss the increased polarization starting in 2014 until the country's dramatic division in recent elections. 
+
+# Data
+
+I will use a few data sets to construct my final database. First, I will use data from *Tribunal Superior Eleitoral* (TSE -- Brazil's electoral high court) to obtain all political affiliations of every individual in the country for the period of analysis. It contains information on the date of affiliation, political party's identifier, name and CPF (national identifier), affiliation's current situation and city identifier. 
+
+Furthermore, I will also use two similar datasets to get information on public sector employees on the federal level of the executive branch. Both have very similar information but one is related to direct public employments whilst the other refers to outsourced workers. 
+
+The first one gathers data from 2013 to 2020, so this is the period of time that I will restrict my analysis to. It contains information on the type of spell -- if the employee is a civil servant^[ Hired by means of public examinations.] or was appointed --, the public agency the employee is assigned to, the public agency the employee is actually working on^[ The worker can be reallocated in some cases as it will be discussed in Section \ref{Section 2}.], working hours per week, the date in which they have joined the public sector and the current public agency, their post, the state in which they are serving, name and CPF. 
+
+The data on outsourced workers contains information on their public agency, firm's name and identifier, necessary schooling years for the post, hours worked per week, salary, the date in which they have began working for the public sector, workers name and CPF.
+
+Finally, if there is enough time, I will try to extend my analysis to the private sector to understand the dynamics of workers that migrate between the private and the public sector, especially those with appointed public jobs. To do this, I will need access to RAIS^[ I would need access to RAIS with name and CPF.], a employer-employee database covering all formal labor supply in Brazil. It includes information on the start and end of contract, the occupation, sector and demographic characteristics of workers.
+
+I would also use the *Cadastro Nacional de Pessoas Jurídicas* (CNPJ) to get information on business owners and see if owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party. CNPJ's database contains owners' name and CPF, firms identifier, the number of associated owners and the date each one have become associated.  
+
+
+# Empirical Strategy
+
+As I will be working with a lot of different datasets within a limited period of time, this research project will have a descriptive approach, i.e. I will not answer any of the research questions causally. For this reason, it is not yet possible to fully define the statistics I will provide, since ideas might (dis)appear during the exploration of the data. However, henceforth I will discuss some possibilities.
+
+As CPFs are not entirely provided in the data sets^[ The first three and last two digits are omitted.], but I have employees full names, I can merge the databases to get the information I need. I will provide some summary statistics both on political affiliations in Brazil and on the public sector labor market. Next, I will provide some other descriptive statistics by merging all sets of information. For instance, I will be able to indicate how different are affiliations rates between public sector employees and the general population; the number of hirings and dismissals of government workers of all type before and after electoral cycles; and run an heterogeneity analysis in terms of managerial or non-managerial posts. 
+
+In terms of job turnover, I will measure whether it has changed between elections by a hazard function. It indicates the probability that the employment spell will be terminated next month, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I will use an approach adapted from @pb99, where the hazard function for each year will be calculated by:
+
+\begin{equation}
+  h_t(d) = \frac{T_t(d)}{N_t(d)}
+\end{equation}
+
+Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ is the number of public sector employments terminated at time $t$ given duration $d$; and $N_t(d)$ is the total number of active employments in the public sector. I will consider $d \in D$, such that $D= \{ 12,24,48 \}$.
+
+If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
+
+
+# Roadmap
+
+Table \ref{table:2} describes the planning of the next steps in order to complete this study
+
+\begin{table}[H]
+\centering \begin{tabularx}{\textwidth}{Xc}
+\toprule
+\centering{\textbf{Activity}}                                   & \textbf{Date}            \\ \midrule
+Finish literature review and institutional readings & October 10 -- October 30  \\
+Prepare results                                     & October 10 -- November 26  \\ 
+Prepare the presentation                            & November 26 -- November 28  \\
+Finish the writing                                  & November 20 -- December 02  \\ \midrule
+\end{tabularx}
+\caption{Next steps}
+\label{table:2}
+\end{table}
+
+
+# References 
+

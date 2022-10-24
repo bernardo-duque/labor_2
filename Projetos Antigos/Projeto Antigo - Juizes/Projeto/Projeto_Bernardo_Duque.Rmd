@@ -1,0 +1,92 @@
+---
+title: "**The Effects of Incarceration on Post-Jail Outcomes**"
+subtitle: "Research Project for Labor II - PUC-Rio"
+author: "Bernardo Duque"
+date: "September 15, 2022"
+output:
+  pdf_document:
+    toc: F
+    number_sections: T
+fontsize: 12pt
+header-includes:
+ \usepackage{float}
+ \floatplacement{figure}{H}
+ \renewcommand{\baselinestretch}{1.5} 
+ \usepackage{booktabs}
+ \addtolength{\skip\footins}{1pc}
+bibliography: export.bib
+link-citations: true
+nocite: '@*'
+---
+```{r setup, echo = F, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center')
+# 2pc plus 5pt
+#csl: csl_tipo.csl
+```
+
+# Introduction
+
+The main goals of incarceration are to prevent crime through deterrence and incapacitaion as well as through the rehabilitation and reintegration of ex-inmates into society. However, most countries are failing to reach these goals, as their judicial and prison systems lead to overincarceration, overcrowding and disrespect for human rights [@UN2021]. Time spent in prison could potentially foster inequality, creating a circle of exclusion and discrimination, specially because nonwhite and poor people are overrepresented in these spaces. 
+
+Brazil, the third largest prison population in the world [@world2021], is no exception. The country's prison population has been doubling since 1990, when it was estimated around 90 thousand people, and to date have reached more than 811 thousand inmates [@infopen2014; @world2021]^[This represents around 381 people incarcerated per 100,000 citizens. Brazil ranks 15 in this comparison.]. Reports of human rights abuses and mistreatment of inmates are common in the media. Less common, but also worrying, are the reports of in-prison slaughters and gang disputes. 
+
+Furthermore, it is publicly debated whether the incarceration of low-level offenders, interacting with high-level offenders, could lead to recidivism of the first group into more violent crimes, as if prisons would be "crime schools" for these segment of prisoners. Little evidence has been produced to test if this is true in Brazil, as well as if deterrence works. 
+To the best of my knowledge, the only study to approach these questions directly is @Ribeiro2019. In the context of pretrial detention, the authors find that in fact incapacitation is the channel that reduces crime in the medium-run and that pretrial incarceration increases more severe recidivism. Although this last result is not robust, it suggests that incarceration may backfire on its goal of preventing future crime.
+
+In relation to the effects of incarceration on social outcomes, the literature is scarce both for Brazil and for the rest of the world. @Bhuller2020 find, in the context of Norway, that imprisonment discourages future criminal behavior mainly by individuals not working prior to being arrested, and that had access to job training and rehabilitation programs inside the Norwegian prison system. In the context of Florida and California, @Kling2006 similarly finds that longer lengths of incarceration leads to positive labor market outcomes and no negative effects in the medium-rum. However, using data from Philadelphia and Miami, @Dobbie2018 find that pretrial arrests have no net effect on crime, but decreases formal employment. 
+
+For Brazil, I have not found any paper that deals with the effects of incarceration. The most closely related to it is @brazil2022, although they study how unemployment affects crime (and, consequently, incarceration). The authors find that the probability of committing crimes increases by 23% for young and low-tenure workers that were part of mass-layoffs. Although scarce, this evidence suggests that if the other direction also matters, i.e. if incarceration affects employment -- via stigma or depreciation of human capital, for example --, then it could also affect recidivism, creating a vicious cycle. This study, therefore, aims to contribute with this literature providing evidence of this other direction in the context of a developing country.  
+
+Hence, the ultimate goal of this research is to answer what are the effects of imprisonment on outcomes related to the labor market. More specifically, I will try to find out if being incarcerated in Brazil affects the probability of getting a job, the distribution of future wages and how these outcomes vary in relation to the type of crime committed. The overall idea is to join data on labor market outcomes with data on the individual level of ex-inmates. However, access to this information is not trivial, and may pose some challenges to the analysis. 
+
+Ideally, I would also like to study what mechanisms would generate the results. For instance, in case of negative effects, I would like to test whether it was driven by social stigma, human capital deterioration or perhaps the stagnation of working experience. Nevertheless, this would be too ambitious for the time being and will be left out of the scope of this project. 
+
+The following section will discuss more about the data that will be used and its limitations, and the subsequent section will briefly discuss the empirical strategy that will probably be used. The last section will conclude presenting a roadmap for this project.
+
+# Data
+
+The main database that I would like to use is Kurier's data set on criminal prosecution. Kurier is a paralegal enterprise that offers digital solutions to law firms. The data set contains information on first degree criminal prosecution between 2009-2017, the judge's name and rulings, as well as defendant's name and the type of crime committed. The limitation of this data is that it does not contain information on judicial appeals, and possibly a fraction of defendants is considered not guilty after all. However, it seems that this fraction is not very considerable^[I talked to one of the authors of @hsu2022 that have access to data on some judicial outcomes and this is what I was told. I would have to check it somehow.]. The use of this data is conditional on the authors of @hsu2022 or Kurier itself granting me access to the data.
+
+Ideally, I would also like to check if the offenders were actually arrested and when they were released, but I am not sure if I can have access to data on the actual prison system. I know that the *Defensoria Pública do Rio de Janero* (Public Defender's Office of Rio de Janeiro, henceforth DPRJ), have information on pretrial arrests as used by @Ribeiro2019, and I will talk to the authors to find out if there is information on general arrests and if DPRJ is willing to lend me access to this data. 
+
+As there is no public information on identified informal labor supply, I will restrict the analysis to the formal labor market. The source for this will be RAIS, a employer-employee database covering all formal labor supply in Brazil. It includes information on the start and end of contract, the occupation, sector and demographic characteristics of workers.
+Finally, if necessary, I will use data on the level of prisons as controls. The source for this is SISDEPEN, a government platform that summarizes information on all prisons in Brazil and their carcerary population.
+
+# Empirical Strategy
+
+As I do not have access to the data I need yet and the aim of this research project is to be brief, I will shortly summarize the empirical strategy I intend to use. Based on the information of judges, it is possible to use judge severity as an instrumental variable (IV) for being arrested, as it is common in the literature [e.g. @Bhuller2020; @Dobbie2018; @aizer2015]. Therefore I intend to estimate:
+
+\begin{equation}
+arrest_{i} = \gamma_0 + \gamma_1severity_{ij} + \gamma_2X_i + u_i
+\label{eq:1}
+\end{equation}
+
+\begin{equation}
+y_i = \beta_0 + \beta_1\hat{arrest_i} + \beta_3X_i + \varepsilon_i
+\label{eq:2}
+\end{equation}
+
+Where (\ref{eq:1}) represents the first stage and (\ref{eq:2}) the second stage; $arrest_i$ is a dummy with value equal to one if the individual was convicted in a first-degree court^[Used as proxy for being arrested.]; $severity_{ij}$ represents the severity of judge $j$ allocated to individual $i$; $y_i$ are the outcomes of interest; and $X_i$ are controls. The outcomes of interest are employment, wages and perhaps recidivism.
+
+The two hypothesis for identification are the usual IV ones. The relevance condition will be tested via equation (\ref{eq:1}) and the exclusion condition will be satisfied if in fact the allocation of judges to cases are random. I will have to talk to a few Courts of Justice to confirm that this is the case. I would also like to run an heterogeneity analysis by type of crime.
+
+# Roadmap
+
+Table \ref{table:1} describes the planning of the next steps in order to complete this research.
+
+\begin{table}[H]
+\centering \begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Activity}                                   & \textbf{Date}            \\ \midrule
+Finish literature review and institutional readings & September 20 - October 10  \\
+Data collection and data cleaning                   & September 20 - November 01 \\
+Descriptive statistics and IV estimation            & November 02 - November 12  \\ 
+Prepare the presentation                            & November 22 - November 28  \\
+Finish the writing                                  & November 12 - December 02  \\ \midrule
+\end{tabular}
+\caption{Next steps}
+\label{table:1}
+\end{table}
+
+
+# References 
