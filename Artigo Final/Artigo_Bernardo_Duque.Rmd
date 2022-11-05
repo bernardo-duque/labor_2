@@ -31,8 +31,10 @@ always_allow_html: true
 ---
 ```{r setup, echo = F, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center')
-# 2pc plus 5pt
-#csl: csl_tipo.csl
+library(tidyverse)
+library(ggplot2)
+library(patchwork)
+library(readr)
 ```
 
 # Feedbacks Ursula
@@ -44,6 +46,12 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'cen
 * Ideia de aferir causalidade eh usar um match com pessoas parecidas do partido perdedor
 
 * Dropar terceirizados
+
+* Olhar para promocoes (classe cargo)
+
+* Nao to medindo demissao, e sim desligamento. Uma forma de ver se eh demissao msm seria cruzar com a RAIS e ver quantas pessoas tao pro mercado privado imediatamente depois
+
+* Transition probability matrix?
 
 # Introduction
 
@@ -109,10 +117,15 @@ Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ 
 If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
 
 ```{r,echo=F}
-setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
-load("grafico_1.RData")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+load(file="descritivas_filiacao.RData")
 
-grafico_1
+g1
+```
+
+
+```{r,echo=F}
+g2
 ```
 
 
