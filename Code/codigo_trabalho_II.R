@@ -4,7 +4,7 @@ pacman::p_load(sf, tidyverse, geobr, ggplot2, terra, spData,
                tictoc, readxl, writexl, highcharter, janitor,
                tidytext, RColorBrewer, tm, grDevices, reshape2, 
                R.utils, readr, data.table, zoo, lubridate,
-               stringr, Hmisc,scales, gridExtra)
+               stringr, Hmisc,scales, gridExtra, rio)
 
 #####----- Base Filiacao ------#####
 
@@ -18,18 +18,18 @@ colunas <- c("titulo_eleitoral", "id_municipio","nome", "sigla_partido","data_fi
 tic("Tempo para baixar a base")
 print("Comecando a baixar a base")
 
-df <- read_delim("base_filiacao.csv", ",", col_names = TRUE,
-                 col_select = all_of(colunas), progress = show_progress())
+amostra <- import("base_filiacao.csv")
 
 print("Terminou de baixar a base")
 toc() #10-13 min
 
 # criando amostra para faciliar tratamento
 
-#amostra <- sample_n(df,size = 100000,replace = F)
+#amostra <- sample_n(amostra,size = 100000,replace = F)
 
 #save(amostra, file = "amostra_base_filiacao.RData")
-#save(df,file = "base_filiacao.RData")
+#save(amostra,file = "base_filiacao.rds")
+read_rds("base_filiacao.rds")
 
 # filtrando para os anos relevantes
 
@@ -56,6 +56,9 @@ amostra <- amostra %>%
          titulo_eleitoral = as.numeric(titulo_eleitoral)) %>%
   select(-data_cancelamento,-data_desfiliacao)
 
+amostra <- amostra %>%
+  filter(is.na(titulo_eleitoral)==F)
+
 # definindo a virada do ano como outubro para captar mudancas pre eleitorais
 
 amostra <- amostra %>%
@@ -80,21 +83,27 @@ amostra <- amostra %>%
 print(paste0("Há ",round(((nrow(amostra) - length(unique(amostra$nome)))/nrow(amostra))*100,2),
              "% de indivíduos com mais de um partido na amostra"))
 
+# 32,19% das obsrrvacoes com mais de um partido, fazendo checkpoint
+# equivalente a 15,41% dos individuos
+save(amostra,file = "base_filiacao_com_dupl.rds")
+
 # removendo esses individuos
 
 titulos <- which(duplicated(amostra$titulo_eleitoral))
-
-amostra <- amostra %>%
-  filter(titulo_eleitoral %nin% titulos)
+titulos <- amostra$titulo_eleitoral[titulos]
 
 # guardando os nomes para se retirar na base dos servidores
-
 nomes_retirar <- amostra %>%
   filter(titulo_eleitoral %in% titulos) %>%
   select(nome) %>%
   pull
 
+amostra <- amostra %>%
+  filter(titulo_eleitoral %nin% titulos)
+
 rm(titulos)
+
+save(amostra,file = "base_filiacao_limpa.rds")
 
 # montando as bases finais para plotar
 
@@ -111,11 +120,11 @@ base_ano <- base_ano %>%
 base_ano$ano <- as.numeric(str_remove(base_ano$ano,"ano_"))
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
-save(base_ano,partidos_ano,file = "bases_tratadas.RData")
+save(base_ano,partidos_ano,file = "bases_grafico_1.RData")
 
 g1 <- ggplot(base_ano,aes(x=ano,y=num_filiados)) + 
-  geom_line(color = "dodgerblue") +
-  geom_point(aes(y=num_filiados),color = "dodgerblue") +
+  geom_line() +
+  geom_point(aes(y=num_filiados)) +
   #  geom_text(aes(label = num_empreg),vjust = -0.8)+
   xlab("Year") + ylab("Number of Affiliates") +
   scale_y_continuous(labels = comma) +
@@ -131,14 +140,23 @@ g1 <- ggplot(base_ano,aes(x=ano,y=num_filiados)) +
 partidos_ano <- partidos_ano %>%
   filter(sigla_partido %in% c("MDB","PT","PSDB","PP","PDT"))
 
-# invertendo a df para plotar
-partidos_ano <- transpose(partidos_ano)
-colnames(partidos_ano) <- partidos_ano[1,]
-partidos_ano <- partidos_ano[2:nrow(partidos_ano),]
-anos <- 2013:2020
-partidos_ano <- cbind(anos,partidos_ano)
+partidos_ano <- partidos_ano %>%
+  pivot_longer(starts_with("ano_"),names_to = "anos", values_to = "num_fil")
+
+partidos_ano$anos <- as.numeric(str_remove(partidos_ano$anos,"ano_"))
 
 # plotando
+
+g2 <- ggplot(partidos_ano, aes(x=anos, y=num_fil)) +
+    geom_line(aes(linetype=sigla_partido)) +
+   geom_point(aes(linetype=sigla_partido),size = 0.5) +
+   xlab("Year") + ylab("Number of Affiliates") +
+   scale_y_continuous(labels = comma) +
+   theme_bw() + 
+   theme(panel.grid.major.x = element_blank(),
+        axis.text = element_text(face = "bold"))
+
+save(g1,g2, file = "descritivas_filiacao.RData")
 
   
 #####----- Base Servidores -----#####
