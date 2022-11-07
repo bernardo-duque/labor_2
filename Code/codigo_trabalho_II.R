@@ -4,7 +4,7 @@ pacman::p_load(sf, tidyverse, geobr, ggplot2, terra, spData,
                tictoc, readxl, writexl, highcharter, janitor,
                tidytext, RColorBrewer, tm, grDevices, reshape2, 
                R.utils, readr, data.table, zoo, lubridate,
-               stringr, Hmisc,scales, gridExtra, rio)
+               stringr, Hmisc,scales, gridExtra, rio, kableExtra)
 
 #####----- Base Filiacao ------#####
 
@@ -18,18 +18,21 @@ colunas <- c("titulo_eleitoral", "id_municipio","nome", "sigla_partido","data_fi
 tic("Tempo para baixar a base")
 print("Comecando a baixar a base")
 
-amostra <- import("base_filiacao.csv")
+amostra <- import("base_filiacao.csv", setclass = "tbl") %>%
+  select(any_of(colunas))
+  
 
 print("Terminou de baixar a base")
-toc() #10-13 min
+toc() #3 min
 
 # criando amostra para faciliar tratamento
 
-#amostra <- sample_n(amostra,size = 100000,replace = F)
+#amostragem <- sample_n(amostra,size = 100000,replace = F)
 
-#save(amostra, file = "amostra_base_filiacao.RData")
-#save(amostra,file = "base_filiacao.rds")
-read_rds("base_filiacao.rds")
+#saveRDS(amostragem,file = "amostragem_filiacao.rds")
+#amostra <- readRDS("amostragem_filiacao.rds")
+#saveRDS(amostra,file = "base_filiacao.rds")
+#amostra <- readRDS("base_filiacao.rds")
 
 # filtrando para os anos relevantes
 
@@ -81,16 +84,20 @@ amostra <- amostra %>%
 # analisando o caso de mais de um partido por pessoa no mesmo ano
 
 print(paste0("Há ",round(((nrow(amostra) - length(unique(amostra$nome)))/nrow(amostra))*100,2),
-             "% de indivíduos com mais de um partido na amostra"))
+             "% de observações com mais de um partido na amostra."))
 
 # 32,19% das obsrrvacoes com mais de um partido, fazendo checkpoint
 # equivalente a 15,41% dos individuos
-save(amostra,file = "base_filiacao_com_dupl.rds")
+saveRDS(amostra,file = "base_filiacao_com_dupl.rds")
+#amostra <- readRDS("base_filiacao_com_dupl.rds")
 
-# removendo esses individuos
+# vendo individuos com mais de um partido
 
 titulos <- which(duplicated(amostra$titulo_eleitoral))
 titulos <- amostra$titulo_eleitoral[titulos]
+
+print(paste0("Há ",round(((length(titulos))/length(unique(amostra$nome)))*100,2),
+             "% de indivíduos com mais de um partido na amostra."))
 
 # guardando os nomes para se retirar na base dos servidores
 nomes_retirar <- amostra %>%
@@ -98,12 +105,34 @@ nomes_retirar <- amostra %>%
   select(nome) %>%
   pull
 
+# criando tabela com numero de pessoas com mais de um partido na amostra
+
+t1 <- amostra %>%
+  mutate(n=1) %>%
+  group_by(titulo_eleitoral) %>%
+  summarise(num_partidos = sum(n))
+
+t1 <- t1 %>%
+  ungroup() %>%
+  count(num_partidos)
+
+unicos <- length(unique(amostra$titulo_eleitoral))
+
+t1 <- t1 %>%
+  mutate(porc = (n/unicos)*100)
+
+# removendo indivudos com mais de um partido (15%)
+
 amostra <- amostra %>%
   filter(titulo_eleitoral %nin% titulos)
 
 rm(titulos)
 
-save(amostra,file = "base_filiacao_limpa.rds")
+saveRDS(amostra,file = "base_filiacao_limpa.rds")
+
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+
+save(t1,file = "num_part_pess.RData")
 
 # montando as bases finais para plotar
 
@@ -119,7 +148,6 @@ base_ano <- base_ano %>%
 
 base_ano$ano <- as.numeric(str_remove(base_ano$ano,"ano_"))
 
-setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 save(base_ano,partidos_ano,file = "bases_grafico_1.RData")
 
 g1 <- ggplot(base_ano,aes(x=ano,y=num_filiados)) + 
@@ -147,14 +175,16 @@ partidos_ano$anos <- as.numeric(str_remove(partidos_ano$anos,"ano_"))
 
 # plotando
 
-g2 <- ggplot(partidos_ano, aes(x=anos, y=num_fil)) +
-    geom_line(aes(linetype=sigla_partido)) +
-   geom_point(aes(linetype=sigla_partido),size = 0.5) +
-   xlab("Year") + ylab("Number of Affiliates") +
-   scale_y_continuous(labels = comma) +
-   theme_bw() + 
-   theme(panel.grid.major.x = element_blank(),
-        axis.text = element_text(face = "bold"))
+g2 <- ggplot(partidos_ano, aes(x=anos, y=num_fil, group = sigla_partido)) +
+      geom_line(aes(linetype=sigla_partido)) +
+      geom_point(size = 0.5) +
+      #xlab("Year") + ylab("Number of Affiliates") +
+      labs(y = "Number of Affiliates", x= "Year", linetype = "Party") +
+      scale_y_continuous(labels = comma) +
+      scale_linetype_manual(values = c("longdash", "dotted","dashed", "solid", "dotdash")) +
+      theme_bw() + 
+      theme(panel.grid.major.x = element_blank(),
+            axis.text = element_text(face = "bold"))
 
 save(g1,g2, file = "descritivas_filiacao.RData")
 
