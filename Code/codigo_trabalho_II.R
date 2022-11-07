@@ -83,11 +83,10 @@ amostra <- amostra %>%
 
 # analisando o caso de mais de um partido por pessoa no mesmo ano
 
-print(paste0("Há ",round(((nrow(amostra) - length(unique(amostra$nome)))/nrow(amostra))*100,2),
+print(paste0("Há ",round(((nrow(amostra) - length(unique(amostra$titulo_eleitoral)))/nrow(amostra))*100,2),
              "% de observações com mais de um partido na amostra."))
 
-# 32,19% das obsrrvacoes com mais de um partido, fazendo checkpoint
-# equivalente a 15,41% dos individuos
+# 13,36% das observacoes com mais de um partido, fazendo checkpoint
 saveRDS(amostra,file = "base_filiacao_com_dupl.rds")
 #amostra <- readRDS("base_filiacao_com_dupl.rds")
 
@@ -96,8 +95,10 @@ saveRDS(amostra,file = "base_filiacao_com_dupl.rds")
 titulos <- which(duplicated(amostra$titulo_eleitoral))
 titulos <- amostra$titulo_eleitoral[titulos]
 
-print(paste0("Há ",round(((length(titulos))/length(unique(amostra$nome)))*100,2),
+print(paste0("Há ",round(((length(unique(titulos)))/length(unique(amostra$titulo_eleitoral)))*100,2),
              "% de indivíduos com mais de um partido na amostra."))
+
+#11,06% de individuos com mais de um partido
 
 # guardando os nomes para se retirar na base dos servidores
 nomes_retirar <- amostra %>%
@@ -121,7 +122,13 @@ unicos <- length(unique(amostra$titulo_eleitoral))
 t1 <- t1 %>%
   mutate(porc = (n/unicos)*100)
 
-# removendo indivudos com mais de um partido (15%)
+# criando base por partido
+
+partidos_ano <- amostra %>%
+  group_by(sigla_partido) %>%
+  summarise(across(ano_2013:ano_2020, ~sum(.x)))
+
+# removendo individuos com mais de um partido (11%)
 
 amostra <- amostra %>%
   filter(titulo_eleitoral %nin% titulos)
@@ -134,11 +141,7 @@ setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 
 save(t1,file = "num_part_pess.RData")
 
-# montando as bases finais para plotar
-
-partidos_ano <- amostra %>%
-  group_by(sigla_partido) %>%
-  summarise(across(ano_2013:ano_2020, ~sum(.x)))
+# criando base por ano
 
 base_ano <- amostra %>%
   summarise(across(ano_2013:ano_2020, ~sum(.x)))
@@ -191,6 +194,8 @@ save(g1,g2, file = "descritivas_filiacao.RData")
   
 #####----- Base Servidores -----#####
 
+rm(g1,g2,t1,partidos_ano,base_ano)
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 servidores <- read.csv("servidores_federais_2013-2020.csv")
 
 # limpando servidores que estao com vinculo sigiloso
@@ -261,14 +266,43 @@ total_ano <- total_ano %>%
   mutate(ano = as.integer(str_remove(ano,"ano_")))
 
 g3 <- ggplot(total_ano,aes(x=ano,y=num_empreg)) + 
-  geom_line(color = "dodgerblue") +
-  geom_point(aes(y=num_empreg),color = "dodgerblue") +
+  geom_line() +
+  geom_point(aes(y=num_empreg)) +
 #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  xlab("Year") + ylab("Number of Workers") +
+  xlab("Year") + ylab("Number of Public Workers") +
   scale_y_continuous(labels = comma) +
   theme_bw() + 
   theme(legend.position = "none",
         panel.grid.major.x = element_blank(),
         panel.grid.minor.y = element_blank(),
         axis.text = element_text(face = "bold")) 
+
+# olhando para descritivas de tipo de vincuo
+
+# analisando o caso de mais de um tipo de vinculo no mesmo ano
+
+print(paste0("Há ",round(((nrow(servidores) - length(unique(servidores$id_servidor)))/nrow(servidores))*100,2),
+             "% de observações com mais de um partido na amostra."))
+
+# 33,25% das observacoes com mais de um partido
+
+# vendo individuos com mais de um partido
+
+ids <- which(duplicated(servidores$id_servidor))
+ids <- servidores$id_servidor[ids]
+
+print(paste0("Há ",round(((length(unique(ids)))/length(unique(servidores$id_servidor)))*100,2),
+             "% de indivíduos com mais de um partido na amostra."))
+
+vinculo <- servidores %>%
+  select(id_servidor,nome,cpf,tipo_vinculo,comeco_emprego,fim_emprego,
+         starts_with("ano_"))
+
+# vou considerar que mudar de servidor pra confianca eh promocao, e o oposto eh democao
+
+vinculo <- vinculo %>% 
+  group_by(id_servidor,nome,cpf,tipo_vinculo)
+  
+  
+  
   
