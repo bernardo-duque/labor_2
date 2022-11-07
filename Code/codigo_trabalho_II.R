@@ -388,4 +388,93 @@ save(g3,g4,file = "descritivas_trabalhadores.RData")
 rm(g3,g4,unicos_2013,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
 
 ### Olhando agora para os desligamentos
-# 
+# salvando servidores para nao ter q rodar de novo o tratamento
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+saveRDS(servidores,file = "base_servidores_antes_ano.rds")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+
+servidores <- servidores %>%
+  mutate(empregado = 1)
+
+## criando painel
+
+# criando base do zero
+servidores_ano <- tibble(ano = rep(2013:2020,length(unique(servidores$id_servidor))))
+
+ids <- unique(servidores$id_servidor)
+ids = rep(ids,length(2013:2020))
+
+servidores_ano <- servidores_ano %>%
+  arrange(ano) %>%
+  cbind(ids) %>%
+  mutate(id_servidor = ids) %>%
+  select(-ids)
+
+servidores_wide <- servidores %>%
+  select(id_servidor,nome,cpf,tipo_vinculo,ano,duracao_mes,empregado)
+
+# transformando base em wide
+
+servidores_wide <- servidores_wide %>%
+  group_by(id_servidor) %>%
+  mutate(row = row_number()) %>%
+  tidyr::pivot_wider(names_from = tipo_vinculo, values_from = empregado) %>%
+  select(-row)
+
+servidores_wide <- servidores_wide %>%
+  mutate(across(Servidor:Outros,~ifelse(is.na(.x),0,.x)))
+
+# dando join
+
+empregados <- servidores_wide %>%
+  group_by(id_servidor,ano) %>%
+  summarise(across(Servidor:Outros, sum))
+
+servidores_ano <- servidores_ano %>%
+  left_join(empregados)
+
+rm(empregados)
+
+# pegando info sobre duracao
+
+durac <- servidores_wide %>%
+  group_by(id_servidor,ano) %>%
+  summarise(duracao_mes = max(duracao_mes))
+
+servidores_ano <- servidores_ano %>%
+  left_join(durac)
+
+rm(durac)
+
+# pegando info sobre nome 
+
+nome <- servidores_wide %>%
+  select(id_servidor,nome)
+
+dupl <- duplicated(nome$id_servidor)
+
+nome <- nome[!dupl,]
+
+servidores_ano <- servidores_ano %>%
+  left_join(nome)
+
+# corrigindo nas e dupla contagem
+
+servidores_ano <- servidores_ano %>%
+  mutate(across(Servidor:duracao_mes, ~ifelse(is.na(.x),0,.x)),
+         across(Servidor:duracao_mes, ~ifelse(.x > 0 ,1,0)))
+
+# criando dummy para emprego
+
+servidores_ano <- servidores_ano %>%
+  mutate(empregado = ifelse(Servidor + Confianca + Outros > 0,1,0))
+
+# usar coluna com dumy de emprego por ano para auxiliar na criacao do desligamento
+servidores_ano <- servidores_ano %>%
+  group_by(id_servidor) %>%
+  mutate(desligado = ifelse(empregado == 1, 0,
+                            ifelse()))
+
+
+
+
