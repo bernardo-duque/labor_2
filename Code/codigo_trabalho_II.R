@@ -196,7 +196,8 @@ save(g1,g2, file = "descritivas_filiacao.RData")
 
 rm(g1,g2,t1,partidos_ano,base_ano)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
-servidores <- read.csv("servidores_federais_2013-2020.csv")
+#amostra <- readRDS("base_filiacao_limpa.rds")
+servidores <- read.csv("servidores_outubro.csv")
 
 # limpando servidores que estao com vinculo sigiloso
 
@@ -215,94 +216,176 @@ servidores <- servidores %>%
   mutate(tipo_vinculo = ifelse(tipo_vinculo == 1, "Confianca",
                                ifelse(tipo_vinculo == 2, "Servidor","Outros")))
 
-# criando dummys para separar os anos
+# separando os anos
 
 servidores <- servidores %>%
-  mutate(comeco_emprego = as.Date(comeco_emprego),
-         fim_emprego = as.Date(fim_empregp)) %>%
-  select(-fim_empregp)
-
-
-# definindo o ano como acabando em novembro (ja que registro comeca no 1o dia do mes)
+  mutate(ano = year(data_empregado))
 
 servidores <- servidores %>%
-  mutate(ano_2013 = ifelse(comeco_emprego < "2013-11-01",1,0),
-         ano_2014 = ifelse(comeco_emprego < "2014-11-01" &
-                            fim_emprego >= "2013-10-01", 1,0),
-         ano_2015 = ifelse(comeco_emprego < "2015-11-01" &
-                             fim_emprego >= "2014-11-01", 1,0),
-         ano_2016 = ifelse(comeco_emprego < "2016-11-01" &
-                             fim_emprego >= "2015-11-01", 1,0),
-         ano_2017 = ifelse(comeco_emprego < "2017-11-01" &
-                             fim_emprego >= "2016-11-01", 1,0),
-         ano_2018 = ifelse(comeco_emprego < "2018-11-01" &
-                             fim_emprego >= "2017-11-01", 1,0),
-         ano_2019 = ifelse(comeco_emprego < "2019-11-01" &
-                             fim_emprego >= "2018-11-01", 1,0),
-         ano_2020 = ifelse(comeco_emprego < "2020-11-01" &
-                             fim_emprego >= "2019-11-01", 1,0))
+  mutate(data_empregado = as.Date(data_empregado),
+         data_ingresso = as.Date(data_dipl_ingresso_servico_publico)) %>%
+  select(-data_dipl_ingresso_servico_publico)
 
-# agrupando todos os servidores
+# contando numero de pessoas unicas sem data de ingresso
 
-total <- servidores %>%
-  group_by(id_servidor,nome,cpf) %>% 
-  summarise(comeco_emprego = min(comeco_emprego),
-            fim_emprego = max(fim_emprego),
-            across(starts_with("ano_"),sum))
+unicos <- servidores %>%
+  filter(is.na(data_ingresso))
 
-total <- total %>%
-  ungroup() %>%
-  mutate(across(starts_with("ano_"),~ifelse(.x > 0,1,0)))
+print(paste0("Há ",round(((length(unique(unicos$id_servidor)))/length(unique(servidores$id_servidor)))*100,2),
+             "% de indivíduos sem data de ingresso na base."))
 
+# 7,47% de servidores unicos sem data de ingresso
+
+# numero de servidores que entrou dps de 2013
+
+pos_2013 <- unicos %>%
+  group_by(id_servidor) %>%
+  summarise(data_empregado = min(data_empregado)) %>%
+  filter(data_empregado > "2013-10-01") %>%
+  nrow
+
+print(paste0("Há ",round((pos_2013/length(unique(servidores$id_servidor)))*100,2),
+             "% de indivíduos sem data de ingresso na base, mas que entraram depois de 2013."))
+
+# 3,7% de individuos sem data de ingresso, mas que entraram depois de 2013, 
+# resta entao 3.7 de individuos sem data de ingresso que serao dropados da analise posteriormente
+
+# alocando data de inicio
+
+inicio <- unicos %>%
+  group_by(id_servidor,tipo_vinculo) %>% 
+  summarise(data_suplementar = min(data_empregado)) %>%
+filter(data_suplementar > "2013-10-01")
+
+# dando join
+
+servidores <- servidores %>%
+  left_join(inicio)
+
+servidores <- servidores %>%
+  mutate(data_ingresso = ifelse(is.na(data_ingresso),data_suplementar,data_ingresso)) %>%
+  select(-data_suplementar)
+
+# sanity check
+
+unicos_2013 <- servidores %>%
+  filter(is.na(data_ingresso))
+
+print(paste0("Há ",round(((length(unique(unicos_2013$id_servidor)))/
+                            length(unique(servidores$id_servidor)))*100,2),
+             "% de indivíduos sem data de ingresso na base."))
+
+# 3,76% de servidores unicos sem data de ingresso
+
+servidores <- servidores %>%
+  mutate(data_ingresso = as.Date(data_ingresso))
+
+# calculando duracao de emprego em dias 
+
+servidores <- servidores %>%
+  mutate(duracao = (data_ingresso - data_empregado))
+
+servidores <- servidores %>%
+  mutate(duracao = str_remove(duracao, " days"),
+         duracao = str_remove(duracao, "-"),
+         duracao_mes = round(as.numeric(duracao)/30)) %>%
+  select(-duracao)
+
+
+### Olhando para os numeros anuais
 # criando base por ano
 
-total_ano <- total %>%
-  select(starts_with("ano_")) %>%
-  summarise(across(everything(),sum)) %>%
-  ungroup()
+servidores <- servidores %>%
+  mutate(n=1)
 
-total_ano <- total_ano %>%
-  pivot_longer(everything(),names_to = "ano",values_to = "num_empreg") %>%
-  mutate(ano = as.integer(str_remove(ano,"ano_")))
+total <- tibble(year = c(2013:2020), num_empreg = NA, num_serv = NA, num_comis = NA,
+                num_outros = NA)
+for (anos in 2013:2020) {
+  
+  temp <- servidores %>%
+    filter(ano == anos)
+  
+  total$num_empreg[anos - 2012] <- length(unique(temp$id_servidor))
+  
+  # servidores
+  
+  temp <- servidores %>%
+    filter(ano == anos,
+           tipo_vinculo == "Servidor")
+  
+  total$num_serv[anos - 2012] <- length(unique(temp$id_servidor))
+  
+  # comissionados
+  
+  temp <- servidores %>%
+    filter(ano == anos,
+           tipo_vinculo == "Confianca")
+  
+  total$num_comis[anos - 2012] <- length(unique(temp$id_servidor))
+  
+  # outros
+  
+  temp <- servidores %>%
+    filter(ano == anos,
+           tipo_vinculo == "Outros")
+  
+  total$num_outros[anos - 2012] <- length(unique(temp$id_servidor))
+  
+  rm(temp)
+    
+}
 
-g3 <- ggplot(total_ano,aes(x=ano,y=num_empreg)) + 
-  geom_line() +
-  geom_point(aes(y=num_empreg)) +
-#  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  xlab("Year") + ylab("Number of Public Workers") +
+# alongando a base
+
+total <- total %>%
+  pivot_longer(cols = c(num_empreg,num_serv,num_comis,num_outros),names_to = "num") %>%
+  mutate(num = ifelse(num == "num_empreg", "Total", 
+                      ifelse(num == "num_serv", "Career",
+                             ifelse(num == "num_comis","Appointed", "Other"))))
+
+# plotando base por ano
+
+g3 <- ggplot(total,aes(x=year,y=value)) + 
+  geom_line(aes(group = num, linetype = num)) +
+  scale_linetype_manual(values = c("dashed","twodash","dotted","solid")) +
+  geom_point(size = 0.5) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Number of Public Workers", x= "Year", linetype = "Type") +
   scale_y_continuous(labels = comma) +
   theme_bw() + 
-  theme(legend.position = "none",
-        panel.grid.major.x = element_blank(),
+  theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.y = element_blank(),
         axis.text = element_text(face = "bold")) 
 
-# olhando para descritivas de tipo de vincuo
+totais <- total %>%
+  filter(num == "Total") %>%
+  arrange(year) %>%
+  mutate(total = value) %>%
+  select(year,total)
 
-# analisando o caso de mais de um tipo de vinculo no mesmo ano
+t2 <- total %>%
+  left_join(totais) %>%
+  filter(num != "Total") %>%
+  group_by(year,num) %>%
+  summarise(porc = (value/total)*100)
 
-print(paste0("Há ",round(((nrow(servidores) - length(unique(servidores$id_servidor)))/nrow(servidores))*100,2),
-             "% de observações com mais de um partido na amostra."))
+g4 <- ggplot(t2,aes(x=year,y=porc)) + 
+  geom_line(aes(group = num, linetype = num)) +
+  scale_linetype_manual(values = c("dashed","twodash","dotted","solid")) +
+  geom_point(size = 0.5) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "% of Public Workers", x= "Year", linetype = "Type") +
+  scale_y_continuous(labels = comma) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) 
 
-# 33,25% das observacoes com mais de um partido
 
-# vendo individuos com mais de um partido
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+save(g3,g4,file = "descritivas_trabalhadores.RData")
 
-ids <- which(duplicated(servidores$id_servidor))
-ids <- servidores$id_servidor[ids]
+rm(g3,g4,unicos_2013,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
 
-print(paste0("Há ",round(((length(unique(ids)))/length(unique(servidores$id_servidor)))*100,2),
-             "% de indivíduos com mais de um partido na amostra."))
-
-vinculo <- servidores %>%
-  select(id_servidor,nome,cpf,tipo_vinculo,comeco_emprego,fim_emprego,
-         starts_with("ano_"))
-
-# vou considerar que mudar de servidor pra confianca eh promocao, e o oposto eh democao
-
-vinculo <- vinculo %>% 
-  group_by(id_servidor,nome,cpf,tipo_vinculo)
-  
-  
-  
-  
+### Olhando agora para os desligamentos
+# 
