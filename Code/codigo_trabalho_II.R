@@ -4,7 +4,8 @@ pacman::p_load(sf, tidyverse, geobr, ggplot2, terra, spData,
                tictoc, readxl, writexl, highcharter, janitor,
                tidytext, RColorBrewer, tm, grDevices, reshape2, 
                R.utils, readr, data.table, zoo, lubridate,
-               stringr, Hmisc,scales, gridExtra, rio, kableExtra)
+               stringr, Hmisc,scales, gridExtra, rio, kableExtra,
+               ggpattern, ggfortify)
 
 #####----- Base Filiacao ------#####
 
@@ -163,7 +164,8 @@ g1 <- ggplot(base_ano,aes(x=ano,y=num_filiados)) +
   theme(legend.position = "none",
         panel.grid.major.x = element_blank(),
         panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) 
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 
   
 ## plotando os partidos com mais numero de filiados
@@ -187,9 +189,11 @@ g2 <- ggplot(partidos_ano, aes(x=anos, y=num_fil, group = sigla_partido)) +
       scale_linetype_manual(values = c("longdash", "dotted","dashed", "solid", "dotdash")) +
       theme_bw() + 
       theme(panel.grid.major.x = element_blank(),
-            axis.text = element_text(face = "bold"))
+            axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 
 save(g1,g2, file = "descritivas_filiacao.RData")
+save(base_ano, partidos_ano, file = "bases_descritivas_filiacao.RData")
 
   
 #####----- Base Servidores -----#####
@@ -355,37 +359,65 @@ g3 <- ggplot(total,aes(x=year,y=value)) +
   theme_bw() + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) 
+        axis.text = element_text(face = "bold")) + 
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 
 totais <- total %>%
-  filter(num == "Total") %>%
-  arrange(year) %>%
-  mutate(total = value) %>%
+  filter(num != "Total") %>%
+  group_by(year) %>%
+  summarise(total = sum(value)) %>%
   select(year,total)
 
 t2 <- total %>%
   left_join(totais) %>%
   filter(num != "Total") %>%
   group_by(year,num) %>%
-  summarise(porc = (value/total)*100)
+  summarise(porc = round((value/total)*100,2))
 
-g4 <- ggplot(t2,aes(x=year,y=porc)) + 
-  geom_line(aes(group = num, linetype = num)) +
-  scale_linetype_manual(values = c("dashed","twodash","dotted","solid")) +
-  geom_point(size = 0.5) +
-  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  labs(y = "% of Public Workers", x= "Year", linetype = "Type") +
+g4 <- ggplot(t2, aes(x = year, y = porc)) + 
+  geom_bar(aes(color = num, fill = num), 
+            alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.4) +
+ # geom_point(aes(y = porc, group = num),
+  #           size = 0.5) +
+  #geom_text(aes(label = porc),vjust = -0.8, size = 3)+
+  scale_fill_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
+  scale_color_manual(values=c("#21130d", "#1e81b0", "#76b5c5"))+
+  geom_text(aes(label = porc),vjust = -0.8, size = 3,
+            hjust = ifelse(t2$num == "Career",.5,
+                           ifelse(t2$num == "Appointed", 1.2,-.3))) +
+  labs(y = "% of Public Workers", x= "Year", color = "Type", fill = "Type") +
   scale_y_continuous(labels = comma) +
   theme_bw() + 
   theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) 
+        #panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
+
+# g4 <- ggplot(t2, aes(x = year, y = porc)) + 
+#   geom_bar_pattern(aes(pattern = num, color = num, fill =num), 
+#            alpha = 0.5, position = position_dodge(0.8),
+#            stat = "identity", width = 0.4,
+#            pattern = 'polygon_tiling',
+#            pattern_key_scale_factor = 1.2) +
+#   scale_pattern_manual(values = c("stripe","none", "hexagonal")) +
+#   geom_text(aes(label = porc),vjust = -0.8, size = 3,
+#             hjust = ifelse(t2$num == "Career",.5,
+#                            ifelse(t2$num == "Appointed", 1.2,-.3)))+
+#   labs(y = "% of Public Workers", x= "Year", linetype = "Type") +
+#   scale_y_continuous(labels = comma) +
+#   theme_bw() + 
+#   theme(panel.grid.major.x = element_blank(),
+#         #panel.grid.minor.y = element_blank(),
+#         axis.text = element_text(face = "bold")) 
 
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 save(g3,g4,file = "descritivas_trabalhadores.RData")
+save(total,t2, file = "bases_descritivas_trabalhadores.RData")
 
 rm(g3,g4,unicos_2013,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
+
 
 ### Olhando agora para os desligamentos
 # salvando servidores para nao ter q rodar de novo o tratamento
@@ -504,6 +536,201 @@ servidores_ano <- servidores_ano %>%
                                                                ifelse(ano == 2019 & ano_2018 == 1 & empregado == 0,1,
                                                                       ifelse(ano == 2020 & ano_2019 == 1 & empregado == 0,1,0)))))))))
 
+# criando dummy para contratado
 
+servidores_ano <- servidores_ano %>%
+  mutate(contratado = ifelse(ano==2013 & empregado == 1 & duracao_mes < 12,1,
+                            ifelse(ano == 2014 & ano_2013 == 0 & empregado == 1,1,
+                                   ifelse(ano == 2015 & ano_2014 == 0 & empregado == 1,1,
+                                          ifelse(ano == 2016 & ano_2015 == 0 & empregado == 1,1,
+                                                 ifelse(ano == 2017 & ano_2016 == 0 & empregado == 1,1,
+                                                        ifelse(ano == 2018 & ano_2017 == 0 & empregado == 1,1,
+                                                               ifelse(ano == 2019 & ano_2018 == 0 & empregado == 1,1,
+                                                                      ifelse(ano == 2020 & ano_2019 == 0 & empregado == 1,1,0)))))))))
+
+contratados <- servidores_ano %>%
+  group_by(ano) %>%
+  summarise(contratado = sum(contratado),
+            desligado = sum(desligado)) %>%
+  mutate(liq = contratado - desligado) %>%
+  pivot_longer(names_to = "variable",values_to = "value",cols = c(contratado,desligado,liq))
+  
+  
+
+g5 <- ggplot(contratados,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable)) +
+  scale_linetype_manual(values = c("longdash","dotted","solid"), name = "Type",
+                        labels = c("Hiring", "Dismissal", "Net Hiring")) +
+  geom_point(size = 0.5) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Number of Public Workers", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+
+# agora separando por tipo de vinculo
+# nao ta o codigo mais limpo mas deu preguica de escrever um for
+
+aux <- servidores_ano %>%
+  mutate(ano_2013_serv = ifelse(Servidor == 1 & ano == 2013,1,0),
+         ano_2014_serv = ifelse(Servidor == 1 & ano == 2014,1,0),
+         ano_2015_serv = ifelse(Servidor == 1 & ano == 2015,1,0),
+         ano_2016_serv = ifelse(Servidor == 1 & ano == 2016,1,0),
+         ano_2017_serv = ifelse(Servidor == 1 & ano == 2017,1,0),
+         ano_2018_serv = ifelse(Servidor == 1 & ano == 2018,1,0),
+         ano_2019_serv = ifelse(Servidor == 1 & ano == 2019,1,0),
+         ano_2020_serv = ifelse(Servidor == 1 & ano == 2020,1,0),
+         ano_2013_conf = ifelse(Confianca == 1 & ano == 2013,1,0),
+         ano_2014_conf = ifelse(Confianca == 1 & ano == 2014,1,0),
+         ano_2015_conf = ifelse(Confianca == 1 & ano == 2015,1,0),
+         ano_2016_conf = ifelse(Confianca == 1 & ano == 2016,1,0),
+         ano_2017_conf = ifelse(Confianca == 1 & ano == 2017,1,0),
+         ano_2018_conf = ifelse(Confianca == 1 & ano == 2018,1,0),
+         ano_2019_conf = ifelse(Confianca == 1 & ano == 2019,1,0),
+         ano_2020_conf = ifelse(Confianca == 1 & ano == 2020,1,0),
+         ano_2013_outro = ifelse(Outros == 1 & ano == 2013,1,0),
+         ano_2014_outro = ifelse(Outros == 1 & ano == 2014,1,0),
+         ano_2015_outro = ifelse(Outros == 1 & ano == 2015,1,0),
+         ano_2016_outro = ifelse(Outros == 1 & ano == 2016,1,0),
+         ano_2017_outro = ifelse(Outros == 1 & ano == 2017,1,0),
+         ano_2018_outro = ifelse(Outros == 1 & ano == 2018,1,0),
+         ano_2019_outro = ifelse(Outros == 1 & ano == 2019,1,0),
+         ano_2020_outro = ifelse(Outros == 1 & ano == 2020,1,0)) %>%
+    select(id_servidor,matches("_serv|_conf|outro"))
+
+aux <- aux %>%
+  group_by(id_servidor) %>%
+  summarise(across(matches("_serv|_conf|outro$"),sum))
+
+servidores_ano <- servidores_ano %>%
+  left_join(aux)
+
+rm(aux)
+
+# criando dummy de desligado por tipo (codigo feio...)
+
+servidores_ano <- servidores_ano %>%
+  mutate(desligado_serv = ifelse(ano==2013,0,
+                            ifelse(ano == 2014 & ano_2013_serv == 1 & Servidor == 0,1,
+                                   ifelse(ano == 2015 & ano_2014_serv == 1 & Servidor == 0,1,
+                                          ifelse(ano == 2016 & ano_2015_serv == 1 & Servidor == 0,1,
+                                                 ifelse(ano == 2017 & ano_2016_serv == 1 & Servidor == 0,1,
+                                                        ifelse(ano == 2018 & ano_2017_serv == 1 & Servidor == 0,1,
+                                                               ifelse(ano == 2019 & ano_2018_serv == 1 & Servidor == 0,1,
+                                                                      ifelse(ano == 2020 & ano_2019_serv == 1 & Servidor == 0,1,0)))))))))
+
+
+servidores_ano <- servidores_ano %>%
+  mutate(desligado_conf = ifelse(ano==2013,0,
+                            ifelse(ano == 2014 & ano_2013_conf == 1 & Confianca == 0,1,
+                                   ifelse(ano == 2015 & ano_2014_conf == 1 & Confianca == 0,1,
+                                          ifelse(ano == 2016 & ano_2015_conf == 1 & Confianca == 0,1,
+                                                 ifelse(ano == 2017 & ano_2016_conf == 1 & Confianca == 0,1,
+                                                        ifelse(ano == 2018 & ano_2017_conf == 1 & Confianca == 0,1,
+                                                               ifelse(ano == 2019 & ano_2018_conf == 1 & Confianca == 0,1,
+                                                                      ifelse(ano == 2020 & ano_2019_conf == 1 & Confianca == 0,1,0)))))))))
+
+servidores_ano <- servidores_ano %>%
+  mutate(desligado_outro = ifelse(ano==2013,0,
+                                 ifelse(ano == 2014 & ano_2013_outro == 1 & Outros == 0,1,
+                                        ifelse(ano == 2015 & ano_2014_outro == 1 & Outros == 0,1,
+                                               ifelse(ano == 2016 & ano_2015_outro == 1 & Outros == 0,1,
+                                                      ifelse(ano == 2017 & ano_2016_outro == 1 & Outros == 0,1,
+                                                             ifelse(ano == 2018 & ano_2017_outro == 1 & Outros == 0,1,
+                                                                    ifelse(ano == 2019 & ano_2018_outro == 1 & Outros == 0,1,
+                                                                           ifelse(ano == 2020 & ano_2019_outro == 1 & Outros == 0,1,0)))))))))
+
+# dummies para contratacao por tipo
+
+servidores_ano <- servidores_ano %>%
+  mutate(contratado_serv = ifelse(ano==2013 & Servidor == 1 & duracao_mes < 12,1,
+                             ifelse(ano == 2014 & ano_2013_serv == 0 & Servidor == 1,1,
+                                    ifelse(ano == 2015 & ano_2014_serv == 0 & Servidor == 1,1,
+                                           ifelse(ano == 2016 & ano_2015_serv == 0 & Servidor == 1,1,
+                                                  ifelse(ano == 2017 & ano_2016_serv == 0 & Servidor == 1,1,
+                                                         ifelse(ano == 2018 & ano_2017_serv == 0 & Servidor == 1,1,
+                                                                ifelse(ano == 2019 & ano_2018_serv == 0 & Servidor == 1,1,
+                                                                       ifelse(ano == 2020 & ano_2019_serv == 0 & Servidor == 1,1,0)))))))))
+
+servidores_ano <- servidores_ano %>%
+  mutate(contratado_conf = ifelse(ano==2013 & Confianca == 1 & duracao_mes < 12,1,
+                                  ifelse(ano == 2014 & ano_2013_conf == 0 & Confianca == 1,1,
+                                         ifelse(ano == 2015 & ano_2014_conf == 0 & Confianca == 1,1,
+                                                ifelse(ano == 2016 & ano_2015_conf == 0 & Confianca == 1,1,
+                                                       ifelse(ano == 2017 & ano_2016_conf == 0 & Confianca == 1,1,
+                                                              ifelse(ano == 2018 & ano_2017_conf == 0 & Confianca == 1,1,
+                                                                     ifelse(ano == 2019 & ano_2018_conf == 0 & Confianca == 1,1,
+                                                                            ifelse(ano == 2020 & ano_2019_conf == 0 & Confianca == 1,1,0)))))))))
+
+
+servidores_ano <- servidores_ano %>%
+  mutate(contratado_outro = ifelse(ano==2013 & Outros == 1 & duracao_mes < 12,1,
+                                  ifelse(ano == 2014 & ano_2013_outro == 0 & Outros == 1,1,
+                                         ifelse(ano == 2015 & ano_2014_outro == 0 & Outros == 1,1,
+                                                ifelse(ano == 2016 & ano_2015_outro == 0 & Outros == 1,1,
+                                                       ifelse(ano == 2017 & ano_2016_outro == 0 & Outros == 1,1,
+                                                              ifelse(ano == 2018 & ano_2017_outro == 0 & Outros == 1,1,
+                                                                     ifelse(ano == 2019 & ano_2018_outro == 0 & Outros == 1,1,
+                                                                            ifelse(ano == 2020 & ano_2019_outro == 0 & Outros == 1,1,0)))))))))
+
+
+contratados_tipo <- servidores_ano %>%
+  group_by(ano) %>%
+  summarise(contratado_serv = sum(contratado_serv),
+            desligado_serv = sum(desligado_serv),
+            contratado_conf = sum(contratado_conf),
+            desligado_conf = sum(desligado_conf),
+            contratado_outro = sum(contratado_outro),
+            desligado_outro = sum(desligado_outro)) %>%
+  mutate(liq_serv = contratado_serv - desligado_serv,
+         liq_conf = contratado_conf - desligado_conf,
+         liq_outro = contratado_outro - desligado_outro) %>%
+  pivot_longer(names_to = "variable",values_to = "value",
+               cols = c(liq_serv,liq_conf,liq_outro))
+
+
+# nesse grafico talvez valha a pena acrescentar no filtro q a pessoa esta desempregada no 
+# setor publico, pq aq eh possivel q ela tenha perdido cargo de confianca mas ainda esteja
+# como servidora ou outra.
+
+g6 <- ggplot(contratados_tipo,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable)) +
+  scale_linetype_manual(values = c("longdash","dotted","solid"), name = "Net Hirings",
+                        labels = c("Appointed", "Other", "Career")) +
+  geom_point(size = 0.5) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Number of Public Workers", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4) #+
+#geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+#           alpha = 0.2, size = 4)
+
+
+save(g5,g6, file = "descritivas_fluxos.RData")
+save(contratados,contratados_tipo, file = "base_descritivas_fluxos.RData")
+
+rm(contratados,contratados_tipo,g5,g6,servidores_wide,dupl,ids)
+
+### Criando variavel de rotatividade
+
+rotatividade <- servidores_ano %>%
+  mutate(hazard_12 = ifelse(duracao_mes == 12 & ))
+  group_by(ano) %>%
+  summarise(hazard_12 = sum(hazard_12)/count(ano))
 
 
