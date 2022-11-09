@@ -391,6 +391,7 @@ rm(g3,g4,unicos_2013,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
 # salvando servidores para nao ter q rodar de novo o tratamento
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 saveRDS(servidores,file = "base_servidores_antes_ano.rds")
+servidores <- readRDS(file = "base_servidores_antes_ano.rds")
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 
 servidores <- servidores %>%
@@ -458,11 +459,13 @@ nome <- nome[!dupl,]
 servidores_ano <- servidores_ano %>%
   left_join(nome)
 
+rm(nome)
+
 # corrigindo nas e dupla contagem
 
 servidores_ano <- servidores_ano %>%
   mutate(across(Servidor:duracao_mes, ~ifelse(is.na(.x),0,.x)),
-         across(Servidor:duracao_mes, ~ifelse(.x > 0 ,1,0)))
+         across(Servidor:Outros, ~ifelse(.x > 0 ,1,0)))
 
 # criando dummy para emprego
 
@@ -470,10 +473,36 @@ servidores_ano <- servidores_ano %>%
   mutate(empregado = ifelse(Servidor + Confianca + Outros > 0,1,0))
 
 # usar coluna com dumy de emprego por ano para auxiliar na criacao do desligamento
-servidores_ano <- servidores_ano %>%
+
+aux <- servidores_ano %>%
+  mutate(ano_2013 = ifelse(empregado == 1 & ano == 2013,1,0),
+         ano_2014 = ifelse(empregado == 1 & ano == 2014,1,0),
+         ano_2015 = ifelse(empregado == 1 & ano == 2015,1,0),
+         ano_2016 = ifelse(empregado == 1 & ano == 2016,1,0),
+         ano_2017 = ifelse(empregado == 1 & ano == 2017,1,0),
+         ano_2018 = ifelse(empregado == 1 & ano == 2018,1,0),
+         ano_2019 = ifelse(empregado == 1 & ano == 2019,1,0),
+         ano_2020 = ifelse(empregado == 1 & ano == 2020,1,0)) %>%
+  select(id_servidor,starts_with("ano_"))
+
+aux <- aux %>%
   group_by(id_servidor) %>%
-  mutate(desligado = ifelse(empregado == 1, 0,
-                            ifelse()))
+  summarise(across(starts_with("ano_"),sum))
+
+servidores_ano <- servidores_ano %>%
+  left_join(aux)
+
+rm(aux)
+
+servidores_ano <- servidores_ano %>%
+  mutate(desligado = ifelse(ano==2013,0,
+                            ifelse(ano == 2014 & ano_2013 == 1 & empregado == 0,1,
+                                   ifelse(ano == 2015 & ano_2014 == 1 & empregado == 0,1,
+                                          ifelse(ano == 2016 & ano_2015 == 1 & empregado == 0,1,
+                                                 ifelse(ano == 2017 & ano_2016 == 1 & empregado == 0,1,
+                                                        ifelse(ano == 2018 & ano_2017 == 1 & empregado == 0,1,
+                                                               ifelse(ano == 2019 & ano_2018 == 1 & empregado == 0,1,
+                                                                      ifelse(ano == 2020 & ano_2019 == 1 & empregado == 0,1,0)))))))))
 
 
 
