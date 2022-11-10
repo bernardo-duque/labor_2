@@ -198,9 +198,8 @@ save(base_ano, partidos_ano, file = "bases_descritivas_filiacao.RData")
   
 #####----- Base Servidores -----#####
 
-rm(g1,g2,t1,partidos_ano,base_ano)
+rm(g1,g2,t1,partidos_ano,base_ano,amostra)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
-#amostra <- readRDS("base_filiacao_limpa.rds")
 servidores <- read.csv("servidores_outubro.csv")
 
 # limpando servidores que estao com vinculo sigiloso
@@ -416,7 +415,7 @@ setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 save(g3,g4,file = "descritivas_trabalhadores.RData")
 save(total,t2, file = "bases_descritivas_trabalhadores.RData")
 
-rm(g3,g4,unicos_2013,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
+rm(g3,g4,unicos,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
 
 
 ### Olhando agora para os desligamentos
@@ -429,7 +428,7 @@ setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 servidores <- servidores %>%
   mutate(empregado = 1)
 
-## criando painel
+####------ criando painel ------####
 
 # criando base do zero
 servidores_ano <- tibble(ano = rep(2013:2020,length(unique(servidores$id_servidor))))
@@ -571,7 +570,7 @@ g5 <- ggplot(contratados,aes(x=ano,y=value)) +
         axis.text = element_text(face = "bold"))   +
   scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
   geom_hline(yintercept=0, linetype="dashed", color = "red") +
-  geom_vline(xintercept=c(2014,2018), linetype="solid", color = "grey",
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
              alpha = 0.5, size = 4) #+
   #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
   #           alpha = 0.2, size = 4)
@@ -715,7 +714,7 @@ g6 <- ggplot(contratados_tipo,aes(x=ano,y=value)) +
         axis.text = element_text(face = "bold"))   +
   scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
   geom_hline(yintercept=0, linetype="dashed", color = "red") +
-  geom_vline(xintercept=c(2014,2018), linetype="solid", color = "grey",
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
              alpha = 0.5, size = 4) #+
 #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
 #           alpha = 0.2, size = 4)
@@ -724,13 +723,145 @@ g6 <- ggplot(contratados_tipo,aes(x=ano,y=value)) +
 save(g5,g6, file = "descritivas_fluxos.RData")
 save(contratados,contratados_tipo, file = "base_descritivas_fluxos.RData")
 
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+saveRDS(servidores_ano, file="base_servidored_painel.rds")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+
 rm(contratados,contratados_tipo,g5,g6,servidores_wide,dupl,ids)
 
-### Criando variavel de rotatividade
+####----- Criando variavel de rotatividade-----####
 
-rotatividade <- servidores_ano %>%
-  mutate(hazard_12 = ifelse(duracao_mes == 12 & ))
-  group_by(ano) %>%
-  summarise(hazard_12 = sum(hazard_12)/count(ano))
+# removendo os ids que nao tinham data de ingresso para computar rotatividade
+
+unicos_2013 <- unique(unicos_2013$id_servidor)
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+    
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
+
+
+rotatividade <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+
+g7 <- ggplot(rotatividade,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable)) +
+  scale_linetype_manual(values = c("solid","dotted","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  geom_point(size = 0.5) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Number of Public Workers", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+
+save(g7, file ="descritiva_rotatividade.RData")
+save(rotatividade, file = "base_descritiva_rotatividade.RData")
+
+
+####------ Dando merge na base de filiacao com a dos servidores-----####
+
+rm(g7,anos,colunas,unicos,rotatividade,aux)
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+amostra <- readRDS("base_filiacao_limpa.rds")
+servidores_ano <- readRDS(file="base_servidored_painel.rds")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+
+a <- which(colnames(amostra)=="ano_2013")
+colnames(amostra)[a:length(amostra)] <- c("fil_2013","fil_2014","fil_2015","fil_2016",
+                                          "fil_2017","fil_2018","fil_2019","fil_2020")
+
+# filtrando a base de filiacao com os nomes dos servidores
+
+nomes <- unique(servidores_ano$nome)
+nomes_2 <- servidores_ano %>%
+  distinct(nome) %>%
+  select(nome)
+
+amostra <- amostra %>%
+  mutate(nome = toupper(nome)) %>%
+  filter(nome %in% nomes)
+
+# retirando nomes duplos das duas bases
+
+duplos_serv <- servidores_ano %>%
+  distinct(id_servidor,nome) %>%
+  select(id_servidor,nome)
+
+amostra <- amostra %>%
+  group_by(titulo_eleitoral)
+
+
 
 
