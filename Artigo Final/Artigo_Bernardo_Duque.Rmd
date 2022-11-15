@@ -273,7 +273,8 @@ contratados %>%
 
 ```{r, fig.cap="\\label{fig:compnet}Composition of Net Hirings per Category"}
 contratados_tipo %>%
-  filter(ano != 2013) %>%
+  filter(ano != 2013,
+         variable %in% c("liq_serv", "liq_conf", "liq_outro")) %>%
   ggplot(aes(x=ano,y=value)) + 
     geom_line(aes(group = variable, linetype = variable, color = variable),
               size = 0.8) +
@@ -297,6 +298,63 @@ contratados_tipo %>%
   #           alpha = 0.2, size = 4)
 ```
 
+
+```{r, fig.cap="\\label{fig:compnet}Career Net Hirings"}
+contratados_tipo %>%
+  filter(ano != 2013,
+         variable %in% c("liq_serv", "contratado_serv", "desligado_serv")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Type",
+                          labels = c("Hirings", "Dismissals", "Net Hirings")) +
+    scale_color_manual(values=c("#1e81b0", "#E74B10", "#21130d"),
+                       labels = c("Hirings", "Dismissals", "Net Hirings"),
+                       name = "Type")+
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Career Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
+
+
+```{r, fig.cap="\\label{fig:compnet}Appointed Net Hirings"}
+contratados_tipo %>%
+  filter(ano != 2013,
+         variable %in% c("liq_conf", "contratado_conf", "desligado_conf")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Type",
+                          labels = c("Hirings", "Dismissals", "Net Hirings")) +
+    scale_color_manual(values=c("#1e81b0", "#E74B10", "#21130d"),
+                       labels = c("Hirings", "Dismissals", "Net Hirings"), 
+                                  name = "Type")+
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Appointed Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
 
 ```{r, fig.cap="\\label{fig:turnover}Turnover of Public Workers"}
 ggplot(rotatividade,aes(x=ano,y=value)) + 
