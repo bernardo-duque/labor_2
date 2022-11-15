@@ -11,9 +11,12 @@ output:
     toc: F
     number_sections: T
 fontsize: 12pt
+fig_caption: yes
 header-includes:
- \usepackage{float}
+ \usepackage{floatrow}
  \floatplacement{figure}{H}
+ \floatsetup[figure]{capposition=top}
+ \floatsetup[table]{capposition=top}
  \renewcommand{\baselinestretch}{1.5} 
  \usepackage{booktabs}
  \addtolength{\skip\footins}{1pc}
@@ -24,12 +27,16 @@ header-includes:
  \hypersetup{
    citecolor=blue,
  }
+ \usepackage[utf8]{inputenc}
+ \DeclareUnicodeCharacter{2265}{\geq}
 bibliography: export.bib
 link-citations: true
 nocite: '@*'
 always_allow_html: true
 ---
 ```{r setup, echo = F, include=FALSE}
+
+#\usepackage{float}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center',
                       out.width="75%", out.height="75%")
 library(tidyverse)
@@ -38,13 +45,18 @@ library(patchwork)
 library(readr)
 library(kableExtra)
 library(stargazer)
+library(scales)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 load(file = "num_part_pess.RData")
-load(file="descritivas_filiacao.RData")
-load(file = "descritivas_trabalhadores.RData")
-load(file = "descritivas_fluxos.RData")
-load(file = "descritiva_rotatividade.RData")
+# load(file="descritivas_filiacao.RData")
+# load(file = "descritivas_trabalhadores.RData")
+# load(file = "descritivas_fluxos.RData")
+# load(file = "descritiva_rotatividade.RData")
+load(file = "bases_descritivas_filiacao.RData")
+load(file = "bases_descritivas_trabalhadores.RData")
+load(file = "base_descritivas_fluxos.RData")
+load(file = "base_descritiva_rotatividade.RData")
 load(file = "modelos.RData")
 ```
 
@@ -140,6 +152,17 @@ Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ 
 If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
 
 ```{r}
+maior_8 <- t1 %>%
+  filter(num_partidos >= 8) %>%
+  #summarise(num_partidos = "\u2265 8", n = sum(n), porc = sum(porc))
+  #summarise(num_partidos = "≥ 8", n = sum(n), porc = sum(porc))
+  #summarise(num_partidos = "$\\geq$ 8", n = sum(n), porc = sum(porc))
+  summarise(num_partidos = ">= 8", n = sum(n), porc = sum(porc))
+
+t1 <- t1 %>%
+  filter(num_partidos < 8) %>%
+  rbind(maior_8)
+
 t1 %>%
   kable(caption = "Number of People with More Than One Party", booktabs = T,digits = 2,
       col.names = c("Number of Parties","Number of People","%"),
@@ -149,47 +172,165 @@ t1 %>%
 ```
 
 
-```{r, out.height="65%", out.width="65%"}
-g1
+```{r, out.height="65%", out.width="65%", fig.cap="\\label{fig:aff}Number of Affiliates"}
+ggplot(base_ano,aes(x=ano,y=num_filiados)) + 
+  geom_line(color = "#1e81b0", size = 0.8) +
+  geom_point(aes(y=num_filiados), size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  xlab("Year") + ylab("Number of Affiliates") +
+  scale_y_continuous(labels = comma) +
+  theme_bw() + 
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8))
 ```
 
 
-```{r}
-g2
+```{r, fig.cap="\\label{fig:polpart}Number of Affiliates per Political Party"}
+ggplot(partidos_ano, aes(x=anos, y=num_fil, group = sigla_partido)) +
+  geom_line(aes(linetype=sigla_partido, color = sigla_partido),
+            size = 0.8) +
+  geom_point(size = 0.8) +
+  #xlab("Year") + ylab("Number of Affiliates") +
+  labs(y = "Number of Affiliates", x= "Year", linetype = "Party", color = "Party") +
+  scale_y_continuous(labels = comma) +
+  scale_linetype_manual(values = c("longdash", "dotted","dashed", "solid", "dotdash")) +
+  scale_colour_manual(values=c("#21130d","#E74B10", "#76b5c5", "#1e81b0","firebrick1")) + 
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 ```
 
 
-```{r}
-g3
+```{r, fig.cap="\\label{fig:publwork}Number of Public Workers"}
+ggplot(total,aes(x=year,y=value)) + 
+  geom_line(aes(group = num, linetype = num, color = num),
+                size = 0.8) +
+  scale_linetype_manual(values = c("dashed","twodash","dotted","solid")) +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Number of Public Workers", x= "Year", linetype = "Type", color = "Type") +
+  scale_colour_manual(values=c("#E74B10", "#76b5c5", "#1e81b0", "#21130d")) + 
+  scale_y_continuous(labels = comma) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) + 
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 ```
 
-```{r}
-g4
+```{r, fig.cap="\\label{fig:comppubl}Compostion of Public Workers"}
+ggplot(t2, aes(x = year, y = porc)) + 
+  geom_bar(aes(color = num, fill = num), 
+            alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.4) +
+ # geom_point(aes(y = porc, group = num),
+  #           size = 0.5) +
+  #geom_text(aes(label = porc),vjust = -0.8, size = 3)+
+  scale_fill_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
+  scale_color_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
+  geom_text(aes(label = porc),vjust = -0.8, size = 3,
+            hjust = ifelse(t2$num == "Career",.5,
+                           ifelse(t2$num == "Appointed", 1.2,-.3))) +
+  labs(y = "% of Public Workers", x= "Year", color = "Type", fill = "Type") +
+  scale_y_continuous(labels = comma) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        #panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 ```
 
-```{r}
-g5
+```{r, fig.cap="\\label{fig:nethir}Net Hirings of Public Workers"}
+contratados %>%
+  filter(ano != 2013) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Type",
+                          labels = c("Hirings", "Dismissals", "Net Hirings")) +
+    scale_color_manual(values=c("#1e81b0", "#E74B10", "#21130d"),
+                       labels = c("Hirings", "Dismissals", "Net Hirings"))+
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Public Workers", x= "Year", color = "Type") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+    #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+    #           alpha = 0.2, size = 4)
 ```
 
 
-```{r}
-g6
+```{r, fig.cap="\\label{fig:compnet}Composition of Net Hirings per Category"}
+contratados_tipo %>%
+  filter(ano != 2013) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Net Hirings",
+                          labels = c("Appointed", "Other", "Career")) +
+    scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("Appointed", "Other", "Career")) +
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Public Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
 ```
 
 
-```{r}
-g7
+```{r, fig.cap="\\label{fig:turnover}Turnover of Public Workers"}
+ggplot(rotatividade,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
 ```
 
-```{r, results = "asis"}
-stargazer(modelo_1, modelo_2,
-          type = "latex",
+```{r, results = "asis",message=FALSE}
+stargazer(modelo_1, modelo_2, title = "Regression" ,
+          type = "latex", header = FALSE,
           covariate.labels = c("Career", "Appointed", "Duration", "Power", "Affiliated", "Constant"),
           keep.stat=c("n", "adj.rsq"),
           #column.sep.width = "4pts",
           #column.labels=c("Murder","Police Killings","Homicide"),
           #column.separate=c(2,2,2),dep.var.labels=c("","",""),
-          notes.align = "l")
+          notes.align = "l",
+          font.size = "scriptsize")
 ```
 
 
