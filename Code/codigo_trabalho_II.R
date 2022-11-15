@@ -845,9 +845,6 @@ colnames(amostra)[a:length(amostra)] <- c("fil_2013","fil_2014","fil_2015","fil_
 # filtrando a base de filiacao com os nomes dos servidores
 
 nomes <- unique(servidores_ano$nome)
-nomes_2 <- servidores_ano %>%
-  distinct(nome) %>%
-  select(nome)
 
 amostra <- amostra %>%
   mutate(nome = toupper(nome)) %>%
@@ -859,8 +856,70 @@ duplos_serv <- servidores_ano %>%
   distinct(id_servidor,nome) %>%
   select(id_servidor,nome)
 
+duplos_serv <- duplos_serv[!(duplicated(duplos_serv$nome) |
+                               duplicated(duplos_serv$nome, fromLast = TRUE)), ] %>%
+  select(nome) %>%
+  pull
+
 amostra <- amostra %>%
-  group_by(titulo_eleitoral)
+  filter(nome %in% duplos_serv)
+
+duplos_am <- amostra %>%
+  distinct(titulo_eleitoral,nome) %>%
+  select(titulo_eleitoral,nome)
+
+duplos_am <- duplos_am[!(duplicated(duplos_am$nome) |
+                               duplicated(duplos_am$nome, fromLast = TRUE)), ] %>%
+  select(nome) %>%
+  pull
+
+amostra <- amostra %>%
+  filter(nome %in% duplos_am) %>%
+  select(nome,sigla_partido,starts_with("fil_"))
+
+servidores_ano <- servidores_ano %>%
+  left_join(amostra)
+
+rm(amostra)
+
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+saveRDS(servidores_ano, file = "bases_merged.rds")
+rm(a,duplos_am,duplos_serv,nomes_retirar,nomes)
+
+
+####----Regressao-----####
+
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+servidores_ano <- readRDS(file = "bases_merged.rds")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+
+# criando dummy para partido da situacao
+
+servidores_ano <- servidores_ano %>%
+  mutate(poder = ifelse(ano %in% c(2014,2015) & sigla_partido == "PT",1,
+                        ifelse(ano %in% c(2016,2017,2018) & sigla_partido == "MDB",1,
+                               ifelse(ano %in% c(2019,2020) & sigla_partido == "PSL",1,0)))) %>%
+  select(-sigla_partido)
+
+# criando dummy para filiacao em cada ano
+
+servidores_ano <- servidores_ano %>%
+  mutate(filiado = ifelse(ano == 2013 & fil_2013 == 1,1,
+                          ifelse(ano == 2014 & fil_2014 == 1, 1,
+                                 ifelse(ano == 2015 & fil_2015 == 1, 1,
+                                        ifelse(ano == 2016 & fil_2016,1,
+                                               ifelse(ano == 2017 & fil_2017 == 1,1,
+                                                      ifelse(ano == 2018 & fil_2018 == 1,1,
+                                                             ifelse(ano == 2019 & fil_2019 == 1,1,
+                                                                    ifelse(ano == 2020 & fil_2020 == 1,1,0)))))))))
+
+modelo_1 <- servidores_ano %>% 
+  group_by(id_servidor) %>%
+  summarise(mod = list(lm(desligado ~ Servidor + Confianca + duracao_mes + poder)))
+modelo_2 <- lm(desligado ~ Servidor + Confianca + duracao_mes + poder)
+modelo_3 <- lm(contratado ~ Servidor + Confianca + poder + filiado, data = servidores_ano)
+
+save(modelo_1,modelo_2,modelo_3, file = "modelos.RData")
 
 
 
