@@ -213,7 +213,33 @@ servidores <- servidores %>%
   filter(id_servidor %nin% tipo_errado,
          nome %nin% c("Sigiloso","SEM INFORMACAO"))
 
-# alterando coluna de tipo de vinculo
+# checando quais sao as categorias mais frequentes tirando confianca e servidor
+
+tipos <- servidores %>%
+  count(tipo_vinculo) %>%
+  arrange()
+
+tipos_1 <- servidores %>%
+  filter(tipo_vinculo == 1) %>%
+  count(situacao_vinculo) %>%
+  arrange(desc(n))
+
+tipos_2 <- servidores %>%
+  filter(tipo_vinculo == 2) %>%
+  count(situacao_vinculo) %>%
+  arrange(desc(n))
+
+tipos_3 <- servidores %>%
+  filter(tipo_vinculo == 3) %>%
+  count(situacao_vinculo) %>%
+  arrange(desc(n))
+
+rm(tipos,tipos_1,tipos_2,tipos_3)
+
+# alterando coluna de tipo de vinculo com base na definicao da base dos dados
+# 1 Função ou Cargo de Confiança; 2 Cargo Emprego; 3 Demais situações - agentes públicos
+# 4 Posto/Graduação
+# Outros engloba basicamente pessoas sem vinculo, contratos temporarios, estagiarios
 
 servidores <- servidores %>%
   mutate(tipo_vinculo = ifelse(tipo_vinculo == 1, "Confianca",
@@ -423,12 +449,15 @@ rm(g3,g4,unicos,inicio,t2,totais,total,anos,pos_2013,tipo_errado)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 saveRDS(servidores,file = "base_servidores_antes_ano.rds")
 servidores <- readRDS(file = "base_servidores_antes_ano.rds")
+
+####------ criando painel ------####
+
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+servidores <- readRDS(file = "base_servidores_antes_ano.rds")
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 
 servidores <- servidores %>%
   mutate(empregado = 1)
-
-####------ criando painel ------####
 
 # criando base do zero
 servidores_ano <- tibble(ano = rep(2013:2020,length(unique(servidores$id_servidor))))
@@ -693,14 +722,19 @@ contratados_tipo <- servidores_ano %>%
          liq_conf = contratado_conf - desligado_conf,
          liq_outro = contratado_outro - desligado_outro) %>%
   pivot_longer(names_to = "variable",values_to = "value",
-               cols = c(liq_serv,liq_conf,liq_outro))
+               cols = c(liq_serv,liq_conf,liq_outro,
+                        contratado_serv,desligado_serv,
+                        contratado_conf,desligado_conf,
+                        contratado_outro,desligado_outro))
 
 
 # nesse grafico talvez valha a pena acrescentar no filtro q a pessoa esta desempregada no 
 # setor publico, pq aq eh possivel q ela tenha perdido cargo de confianca mas ainda esteja
 # como servidora ou outra.
 
-g6 <- ggplot(contratados_tipo,aes(x=ano,y=value)) + 
+g6 <- contratados_tipo %>%
+  filter(variable %in% c("liq_serv", "liq_conf", "liq_outro")) %>%
+  ggplot(aes(x=ano,y=value)) + 
   geom_line(aes(group = variable, linetype = variable)) +
   scale_linetype_manual(values = c("longdash","dotted","solid"), name = "Net Hirings",
                         labels = c("Appointed", "Other", "Career")) +
@@ -884,10 +918,11 @@ rm(amostra)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 saveRDS(servidores_ano, file = "bases_merged.rds")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 rm(a,duplos_am,duplos_serv,nomes_retirar,nomes)
 
 
-####----Regressao-----####
+####----Descritivas bases merged----####
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 servidores_ano <- readRDS(file = "bases_merged.rds")
@@ -912,6 +947,84 @@ servidores_ano <- servidores_ano %>%
                                                       ifelse(ano == 2018 & fil_2018 == 1,1,
                                                              ifelse(ano == 2019 & fil_2019 == 1,1,
                                                                     ifelse(ano == 2020 & fil_2020 == 1,1,0)))))))))
+
+
+servidores_ano <- servidores_ano %>%
+  mutate(across(fil_2013:filiado,~ifelse(is.na(.x),0,.x)))
+
+# pegando quantos servidores publicos eram filiados por ano
+
+filiados_ano <- servidores_ano %>%
+  group_by(ano) %>%
+  summarise(filiado = sum(filiado))
+
+save(filiados_ano, file = "base_filiados_servidore_totais.RData")
+
+rm(filiados_ano)
+
+## pegando qual a proporcao por tipo 
+
+porc_total <- servidores_ano %>%
+  mutate(n = 1) %>%
+  group_by(ano) %>%
+  summarise(total = (sum(filiado)/sum(n))*100)
+
+porc_serv <- servidores_ano %>%
+  mutate(n = 1) %>%
+  filter(Servidor == 1) %>%
+  group_by(ano) %>%
+  summarise(servidores = (sum(filiado)/sum(n))*100)
+
+porc_conf <- servidores_ano %>%
+  mutate(n = 1) %>%
+  filter(Confianca == 1) %>%
+  group_by(ano) %>%
+  summarise(confianca = (sum(filiado)/sum(n))*100)
+
+porc_outros <- servidores_ano %>%
+  mutate(n = 1) %>%
+  filter(Outros == 1) %>%
+  group_by(ano) %>%
+  summarise(outros = (sum(filiado)/sum(n))*100)
+
+# dando merge em todas as dfs de tipos
+
+filiados_tipo <- list(porc_total,porc_serv,porc_conf,porc_outros)
+
+filiados_tipo <- filiados_tipo %>%
+  reduce(full_join, by = "ano")
+
+save(filiados_tipo, file = "base_filiados_tipo.RData")
+
+rm(porc_conf,porc_serv,porc_outros,porc_total, filiados_tipo)
+
+## Vendo Net Hirings para filiados
+
+contratados_filiados <- servidores_ano %>%
+  filter(filiado == 1) %>%
+  group_by(ano) %>%
+  summarise(contratado_serv = sum(contratado_serv),
+            desligado_serv = sum(desligado_serv),
+            contratado_conf = sum(contratado_conf),
+            desligado_conf = sum(desligado_conf),
+            contratado_total = sum(contratado),
+            desligado_total = sum(desligado)) %>%
+  mutate(liq_serv = contratado_serv - desligado_serv,
+         liq_conf = contratado_conf - desligado_conf,
+         liq_total = contratado_total - desligado_total) %>%
+  pivot_longer(names_to = "variable",values_to = "value",
+               cols = c(liq_serv,liq_conf,liq_total,
+                        contratado_serv,desligado_serv,
+                        contratado_conf,desligado_conf,
+                        contratado_total,desligado_total))
+
+save(contratados_filiados, file = "base_contratados_filiados.RData")
+
+## Calculando turnover para filiados
+
+
+
+## Regressao
 
 modelo_1 <- servidores_ano %>% 
   group_by(id_servidor) %>%
