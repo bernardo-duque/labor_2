@@ -30,11 +30,22 @@ nocite: '@*'
 always_allow_html: true
 ---
 ```{r setup, echo = F, include=FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center')
+knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center',
+                      out.width="75%", out.height="75%")
 library(tidyverse)
 library(ggplot2)
-library(patchwork)
+library(patchwork) 
 library(readr)
+library(kableExtra)
+library(stargazer)
+
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+load(file = "num_part_pess.RData")
+load(file="descritivas_filiacao.RData")
+load(file = "descritivas_trabalhadores.RData")
+load(file = "descritivas_fluxos.RData")
+load(file = "descritiva_rotatividade.RData")
+load(file = "modelos.RData")
 ```
 
 # Feedbacks Ursula
@@ -52,6 +63,16 @@ library(readr)
 * Nao to medindo demissao, e sim desligamento. Uma forma de ver se eh demissao msm seria cruzar com a RAIS e ver quantas pessoas tao pro mercado privado imediatamente depois
 
 * Transition probability matrix?
+
+* Grafico com partido dominante por estado
+
+* Limitacoes:
+
+  * Join por nome (sem cpf)
+  
+  * Excluindo quem tem mais de um partido da analise
+  
+  * So olhando para o partido que esta no poder (sem contar coligacao e ate msm vice) (obs 2020 considerando PSL)
 
 # Introduction
 
@@ -87,6 +108,8 @@ Next, I will explain how elections work in Brazil and discuss the increased pola
 
 # Data
 
+DESCREVER OQ FOI FEITO NO R
+
 I will use a few data sets to construct my final database. First, I will use data from *Tribunal Superior Eleitoral* (TSE -- Brazil's electoral high court) to obtain all political affiliations of every individual in the country for the period of analysis. It contains information on the date of affiliation, political party's identifier, name and CPF (national identifier), affiliation's current situation and city identifier. 
 
 Furthermore, I will also use two similar datasets to get information on public sector employees on the federal level of the executive branch. Both have very similar information but one is related to direct public employments whilst the other refers to outsourced workers. 
@@ -116,16 +139,57 @@ Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ 
 
 If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
 
-```{r,echo=F}
-setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
-load(file="descritivas_filiacao.RData")
+```{r}
+t1 %>%
+  kable(caption = "Number of People with More Than One Party", booktabs = T,digits = 2,
+      col.names = c("Number of Parties","Number of People","%"),
+      row.names = F, format.args = list(big.mark = ","),
+      align = "c") %>%
+  kable_styling(latex_options = c("hold_position"), font_size = 12)
+```
 
+
+```{r, out.height="65%", out.width="65%"}
 g1
 ```
 
 
-```{r,echo=F}
+```{r}
 g2
+```
+
+
+```{r}
+g3
+```
+
+```{r}
+g4
+```
+
+```{r}
+g5
+```
+
+
+```{r}
+g6
+```
+
+
+```{r}
+g7
+```
+
+```{r, results = "asis"}
+stargazer(modelo_1, modelo_2,
+          type = "latex",
+          covariate.labels = c("Career", "Appointed", "Duration", "Power", "Affiliated", "Constant"),
+          keep.stat=c("n", "adj.rsq"),
+          #column.sep.width = "4pts",
+          #column.labels=c("Murder","Police Killings","Homicide"),
+          #column.separate=c(2,2,2),dep.var.labels=c("","",""),
+          notes.align = "l")
 ```
 
 
