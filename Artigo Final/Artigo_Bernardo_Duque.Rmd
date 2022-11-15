@@ -35,10 +35,9 @@ nocite: '@*'
 always_allow_html: true
 ---
 ```{r setup, echo = F, include=FALSE}
-
 #\usepackage{float}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE,echo = F,fig.align = 'center',
-                      out.width="75%", out.height="75%")
+                      out.width="75%", out.height="75%", cache = TRUE)
 library(tidyverse)
 library(ggplot2)
 library(patchwork) 
@@ -49,14 +48,13 @@ library(scales)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 load(file = "num_part_pess.RData")
-# load(file="descritivas_filiacao.RData")
-# load(file = "descritivas_trabalhadores.RData")
-# load(file = "descritivas_fluxos.RData")
-# load(file = "descritiva_rotatividade.RData")
 load(file = "bases_descritivas_filiacao.RData")
 load(file = "bases_descritivas_trabalhadores.RData")
 load(file = "base_descritivas_fluxos.RData")
 load(file = "base_descritiva_rotatividade.RData")
+load(file = "base_filiados_servidore_totais.RData")
+load(file = "base_filiados_tipo.RData")
+load("base_contratados_filiados.RData")
 load(file = "modelos.RData")
 ```
 
@@ -172,19 +170,22 @@ t1 %>%
 ```
 
 
-```{r, out.height="65%", out.width="65%", fig.cap="\\label{fig:aff}Number of Affiliates"}
+```{r, fig.cap="\\label{fig:aff}Number of Affiliates"}
 ggplot(base_ano,aes(x=ano,y=num_filiados)) + 
-  geom_line(color = "#1e81b0", size = 0.8) +
+  geom_bar(alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.2,
+           color = "#1e81b0", fill = "#1e81b0") +
   geom_point(aes(y=num_filiados), size = 0.8) +
-  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  geom_text(aes(label = round(num_filiados/1000000,1)),vjust = -0.8,
+            size = 3)+
   xlab("Year") + ylab("Number of Affiliates") +
-  scale_y_continuous(labels = comma) +
+  scale_y_continuous(labels = comma, limits = c(0, 20000000)) +
   theme_bw() + 
   theme(legend.position = "none",
         panel.grid.major.x = element_blank(),
         panel.grid.minor.y = element_blank(),
         axis.text = element_text(face = "bold")) +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8))
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 10))
 ```
 
 
@@ -378,6 +379,134 @@ ggplot(rotatividade,aes(x=ano,y=value)) +
   geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
              alpha = 0.5, size = 4)
 ```
+
+
+```{r, fig.cap="\\label{fig:turnover}Number of Public Workers Affiliated to a Political Party"}
+ggplot(filiados_ano,aes(x=ano,y=filiado)) + 
+  geom_bar(alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.2,
+           color = "#1e81b0", fill = "#1e81b0") +
+  geom_point(aes(y=filiado), size = 0.8) +
+  geom_text(aes(label = round(filiado/1000,1)),vjust = -0.8,
+            size = 3)+
+  xlab("Year") + ylab("Number of Affiliates") +
+  scale_y_continuous(labels = comma, limits = c(0, 125000)) +
+  theme_bw() + 
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 10))
+```
+
+
+```{r}
+filiados_tipo %>%
+  kable(caption = "Proportion of Affiliated Public Workers", booktabs = T,digits = 2,
+      #col.names = c("Mean","Standard Deviaton","%"),
+      row.names = F, format.args = list(big.mark = ","),
+      align = "c") %>%
+  kable_styling(latex_options = c("hold_position"), font_size = 12)
+```
+
+
+```{r, results='asis',message=F}
+filiados_tipo %>%
+  select(-ano) %>%
+  as.data.frame() %>%
+  stargazer(title = "Summary Statistics for Political Affiliation in the Public Sector",
+            omit.summary.stat = c("n"),
+            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other"),
+            header = F)
+```
+
+
+```{r, fig.cap="\\label{fig:compnet2}Composition of Net Hirings per Category If Affiliated"}
+contratados_filiados %>%
+  filter(ano != 2013,
+         variable %in% c("liq_serv", "liq_conf", "liq_total")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Net Hirings",
+                          labels = c("Appointed", "Total", "Career")) +
+    scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("Appointed", "Total", "Career")) +
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Public Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
+
+
+```{r, fig.cap="\\label{fig:careernet2}Career Net Hirings If Affiliated"}
+contratados_filiados %>%
+  filter(ano != 2013,
+         variable %in% c("liq_serv", "contratado_serv", "desligado_serv")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Type",
+                          labels = c("Hirings", "Dismissals", "Net Hirings")) +
+    scale_color_manual(values=c("#1e81b0", "#E74B10", "#21130d"),
+                       labels = c("Hirings", "Dismissals", "Net Hirings"),
+                       name = "Type")+
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Career Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
+
+
+```{r, fig.cap="\\label{fig:appnet2}Appointed Net Hirings If Affiliated"}
+contratados_filiados %>%
+  filter(ano != 2013,
+         variable %in% c("liq_conf", "contratado_conf", "desligado_conf")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Type",
+                          labels = c("Hirings", "Dismissals", "Net Hirings")) +
+    scale_color_manual(values=c("#1e81b0", "#E74B10", "#21130d"),
+                       labels = c("Hirings", "Dismissals", "Net Hirings"), 
+                                  name = "Type")+
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Appointed Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
+
+
 
 ```{r, results = "asis",message=FALSE}
 stargazer(modelo_1, modelo_2, title = "Regression" ,
