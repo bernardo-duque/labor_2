@@ -54,7 +54,11 @@ load(file = "base_descritivas_fluxos.RData")
 load(file = "base_descritiva_rotatividade.RData")
 load(file = "base_filiados_servidore_totais.RData")
 load(file = "base_filiados_tipo.RData")
-load("base_contratados_filiados.RData")
+load(file = "base_contratados_filiados.RData")
+load(file = "base_rotatividade_merg.RData")
+load(file = "base_rotatividade_poder.RData")
+load(file = "base_rotatividade_cat.RData")
+load(file = "base_rotatividade_poder_cat.RData")
 load(file = "modelos.RData")
 ```
 
@@ -83,6 +87,8 @@ load(file = "modelos.RData")
   * Excluindo quem tem mais de um partido da analise
   
   * So olhando para o partido que esta no poder (sem contar coligacao e ate msm vice) (obs 2020 considerando PSL)
+  
+* Falar sobre filiacao em contexto e incluir a 1a tabela e 1o grafico
 
 # Introduction
 
@@ -112,42 +118,55 @@ The following section will provide some guidelines to describe the context of th
 
 In this section I will first detail the most important aspects of the public sector in Brazil. I will discuss employment stability, reallocation within the public sector, the type of hiring (public examinations x appointment), the three branches of power and federalism in Brazil.
 
+```{r, fig.cap="\\label{fig:publwork}Number of Public Workers"}
+ggplot(total,aes(x=year,y=value)) + 
+  geom_line(aes(group = num, linetype = num, color = num),
+                size = 0.8) +
+  scale_linetype_manual(values = c("dashed","twodash","dotted","solid")) +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Number of Public Workers", x= "Year", linetype = "Type", color = "Type") +
+  scale_colour_manual(values=c("#E74B10", "#76b5c5", "#1e81b0", "#21130d")) + 
+  scale_y_continuous(labels = comma) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) + 
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
+```
+
+```{r, fig.cap="\\label{fig:comppubl}Compostion of Public Workers"}
+ggplot(t2, aes(x = year, y = porc)) + 
+  geom_bar(aes(color = num, fill = num), 
+            alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.4) +
+ # geom_point(aes(y = porc, group = num),
+  #           size = 0.5) +
+  #geom_text(aes(label = porc),vjust = -0.8, size = 3)+
+  scale_fill_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
+  scale_color_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
+  geom_text(aes(label = porc),vjust = -0.8, size = 3,
+            hjust = ifelse(t2$num == "Career",.5,
+                           ifelse(t2$num == "Appointed", 1.2,-.3))) +
+  labs(y = "% of Public Workers", x= "Year", color = "Type", fill = "Type") +
+  scale_y_continuous(labels = comma) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        #panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
+```
+
+
 ## The Electoral Cycles and Polarization
 
 Next, I will explain how elections work in Brazil and discuss the increased polarization starting in 2014 until the country's dramatic division in recent elections. 
 
-# Data
+## Political Affiliation
 
-DESCREVER OQ FOI FEITO NO R
+INCLUIR EXPLICACAO SOBRE FILIACAO
 
-I will use a few data sets to construct my final database. First, I will use data from *Tribunal Superior Eleitoral* (TSE -- Brazil's electoral high court) to obtain all political affiliations of every individual in the country for the period of analysis. It contains information on the date of affiliation, political party's identifier, name and CPF (national identifier), affiliation's current situation and city identifier. 
-
-Furthermore, I will also use two similar datasets to get information on public sector employees on the federal level of the executive branch. Both have very similar information but one is related to direct public employments whilst the other refers to outsourced workers. 
-
-The first one gathers data from 2013 to 2020, so this is the period of time that I will restrict my analysis to. It contains information on the type of spell -- if the employee is a civil servant^[ Hired by means of public examinations.] or was appointed --, the public agency the employee is assigned to, the public agency the employee is actually working on^[ The worker can be reallocated in some cases as it will be discussed in Section \ref{Section 2}.], working hours per week, the date in which they have joined the public sector and the current public agency, their post, the state in which they are serving, name and CPF. 
-
-The data on outsourced workers contains information on their public agency, firm's name and identifier, necessary schooling years for the post, hours worked per week, salary, the date in which they have began working for the public sector, workers name and CPF.
-
-Finally, if there is enough time, I will try to extend my analysis to the private sector to understand the dynamics of workers that migrate between the private and the public sector, especially those with appointed public jobs. To do this, I will need access to RAIS^[ I would need access to RAIS with name and CPF.], a employer-employee database covering all formal labor supply in Brazil. It includes information on the start and end of contract, the occupation, sector and demographic characteristics of workers.
-
-I would also use the *Cadastro Nacional de Pessoas Jurídicas* (CNPJ) to get information on business owners and see if owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party. CNPJ's database contains owners' name and CPF, firms identifier, the number of associated owners and the date each one have become associated.  
-
-
-# Empirical Strategy
-
-As I will be working with a lot of different datasets within a limited period of time, this research project will have a descriptive approach, i.e. I will not answer any of the research questions causally. For this reason, it is not yet possible to fully define the statistics I will provide, since ideas might (dis)appear during the exploration of the data. However, henceforth I will discuss some possibilities.
-
-As CPFs are not entirely provided in the data sets^[ The first three and last two digits are omitted.], but I have employees full names, I can merge the databases to get the information I need. I will provide some summary statistics both on political affiliations in Brazil and on the public sector labor market. Next, I will provide some other descriptive statistics by merging all sets of information. For instance, I will be able to indicate how different are affiliations rates between public sector employees and the general population; the number of hirings and dismissals of government workers of all type before and after electoral cycles; and run an heterogeneity analysis in terms of managerial or non-managerial posts. 
-
-In terms of job turnover, I will measure whether it has changed between elections by a hazard function. It indicates the probability that the employment spell will be terminated next month, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I will use an approach adapted from @pb99, where the hazard function for each year will be calculated by:
-
-\begin{equation}
-  h_t(d) = \frac{T_t(d)}{N_t(d)}
-\end{equation}
-
-Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ is the number of public sector employments terminated at time $t$ given duration $d$; and $N_t(d)$ is the total number of active employments in the public sector. I will consider $d \in D$, such that $D= \{ 12,24,48 \}$.
-
-If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
+INCLUIR NOTA DE RODAPE FALANDO PRA MERGE AS BASES 
 
 ```{r}
 maior_8 <- t1 %>%
@@ -206,44 +225,44 @@ ggplot(partidos_ano, aes(x=anos, y=num_fil, group = sigla_partido)) +
 ```
 
 
-```{r, fig.cap="\\label{fig:publwork}Number of Public Workers"}
-ggplot(total,aes(x=year,y=value)) + 
-  geom_line(aes(group = num, linetype = num, color = num),
-                size = 0.8) +
-  scale_linetype_manual(values = c("dashed","twodash","dotted","solid")) +
-  geom_point(size = 0.8) +
-  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  labs(y = "Number of Public Workers", x= "Year", linetype = "Type", color = "Type") +
-  scale_colour_manual(values=c("#E74B10", "#76b5c5", "#1e81b0", "#21130d")) + 
-  scale_y_continuous(labels = comma) +
-  theme_bw() + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) + 
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
-```
 
-```{r, fig.cap="\\label{fig:comppubl}Compostion of Public Workers"}
-ggplot(t2, aes(x = year, y = porc)) + 
-  geom_bar(aes(color = num, fill = num), 
-            alpha = 0.5, position = position_dodge(0.8),
-           stat = "identity", width = 0.4) +
- # geom_point(aes(y = porc, group = num),
-  #           size = 0.5) +
-  #geom_text(aes(label = porc),vjust = -0.8, size = 3)+
-  scale_fill_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
-  scale_color_manual(values=c("#21130d", "#1e81b0", "#76b5c5")) +
-  geom_text(aes(label = porc),vjust = -0.8, size = 3,
-            hjust = ifelse(t2$num == "Career",.5,
-                           ifelse(t2$num == "Appointed", 1.2,-.3))) +
-  labs(y = "% of Public Workers", x= "Year", color = "Type", fill = "Type") +
-  scale_y_continuous(labels = comma) +
-  theme_bw() + 
-  theme(panel.grid.major.x = element_blank(),
-        #panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
-```
+# Data
+
+DESCREVER OQ FOI FEITO NO R
+
+I will use a few data sets to construct my final database. First, I will use data from *Tribunal Superior Eleitoral* (TSE -- Brazil's electoral high court) to obtain all political affiliations of every individual in the country for the period of analysis. It contains information on the date of affiliation, political party's identifier, name and CPF (national identifier), affiliation's current situation and city identifier. 
+
+Furthermore, I will also use two similar datasets to get information on public sector employees on the federal level of the executive branch. Both have very similar information but one is related to direct public employments whilst the other refers to outsourced workers. 
+
+The first one gathers data from 2013 to 2020, so this is the period of time that I will restrict my analysis to. It contains information on the type of spell -- if the employee is a civil servant^[ Hired by means of public examinations.] or was appointed --, the public agency the employee is assigned to, the public agency the employee is actually working on^[ The worker can be reallocated in some cases as it will be discussed in Section \ref{Section 2}.], working hours per week, the date in which they have joined the public sector and the current public agency, their post, the state in which they are serving, name and CPF. 
+
+The data on outsourced workers contains information on their public agency, firm's name and identifier, necessary schooling years for the post, hours worked per week, salary, the date in which they have began working for the public sector, workers name and CPF.
+
+Finally, if there is enough time, I will try to extend my analysis to the private sector to understand the dynamics of workers that migrate between the private and the public sector, especially those with appointed public jobs. To do this, I will need access to RAIS^[ I would need access to RAIS with name and CPF.], a employer-employee database covering all formal labor supply in Brazil. It includes information on the start and end of contract, the occupation, sector and demographic characteristics of workers.
+
+I would also use the *Cadastro Nacional de Pessoas Jurídicas* (CNPJ) to get information on business owners and see if owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party. CNPJ's database contains owners' name and CPF, firms identifier, the number of associated owners and the date each one have become associated.  
+
+
+# Descriptive Analysis
+
+## ANALISE GERAL PARA OS TRABALHADORES PUBLICOS
+
+As I will be working with a lot of different datasets within a limited period of time, this research project will have a descriptive approach, i.e. I will not answer any of the research questions causally. For this reason, it is not yet possible to fully define the statistics I will provide, since ideas might (dis)appear during the exploration of the data. However, henceforth I will discuss some possibilities.
+
+As CPFs are not entirely provided in the data sets^[ The first three and last two digits are omitted.], but I have employees full names, I can merge the databases to get the information I need. I will provide some summary statistics both on political affiliations in Brazil and on the public sector labor market. Next, I will provide some other descriptive statistics by merging all sets of information. For instance, I will be able to indicate how different are affiliations rates between public sector employees and the general population; the number of hirings and dismissals of government workers of all type before and after electoral cycles; and run an heterogeneity analysis in terms of managerial or non-managerial posts. 
+
+In terms of job turnover, I will measure whether it has changed between elections by a hazard function. It indicates the probability that the employment spell will be terminated next month, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I will use an approach adapted from @pb99, where the hazard function for each year will be calculated by:
+
+\begin{equation}
+  h_t(d) = \frac{T_t(d)}{N_t(d)}
+\end{equation}
+
+Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ is the number of public sector employments terminated at time $t$ given duration $d$; and $N_t(d)$ is the total number of active employments in the public sector. I will consider $d \in D$, such that $D= \{ 12,24,48 \}$.
+
+If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
+
+DISCUTIR PQ ROTATIVIDADE EH IMPORTANTE
+
 
 ```{r, fig.cap="\\label{fig:nethir}Net Hirings of Public Workers"}
 contratados %>%
@@ -299,6 +318,273 @@ contratados_tipo %>%
   #           alpha = 0.2, size = 4)
 ```
 
+FALAR QUE A DECOMPOSICAO ESTA NO APENDICE
+
+```{r, fig.cap="\\label{fig:turnover}Turnover of Public Workers"}
+ggplot(rotatividade,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+```{r, fig.cap="\\label{fig:turnover}Turnover of Career Workers"}
+ggplot(rotatividade_serv,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+```{r, fig.cap="\\label{fig:turnover}Turnover of Appointed Workers"}
+ggplot(rotatividade_conf,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+## ANALISE PARA TRABALHADORES AFILIADOS
+
+```{r, fig.cap="\\label{fig:turnover}Number of Public Workers Affiliated to a Political Party"}
+filiados_ano %>% 
+  ggplot(aes(x=ano,y=filiado)) + 
+  geom_bar(alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.2,
+           color = "#1e81b0", fill = "#1e81b0") +
+  geom_point(aes(y=filiado), size = 0.8) +
+  geom_text(aes(label = round(filiado/1000,1)),vjust = -0.8,
+            size = 3)+
+  xlab("Year") + ylab("Number of Affiliates") +
+  scale_y_continuous(labels = comma, limits = c(0, 125000)) +
+  theme_bw() + 
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 10))
+```
+
+
+```{r, results='asis',message=F}
+filiados_tipo %>%
+  select(-ano) %>%
+  as.data.frame() %>%
+  stargazer(title = "Summary Statistics for Political Affiliation in the Public Sector",
+            omit.summary.stat = c("n"),
+            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other", "\\% Population Over 18"),
+            header = F, digits = 2)
+```
+
+
+```{r, fig.cap="\\label{fig:compnet2}Composition of Net Hirings per Category If Affiliated"}
+contratados_filiados %>%
+  filter(ano != 2013,
+         variable %in% c("liq_serv", "liq_conf", "liq_total")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Net Hirings",
+                          labels = c("Appointed", "Total", "Career")) +
+    scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("Appointed", "Total", "Career")) +
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Public Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
+
+
+
+```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Affiliated Public Workers"}
+ggplot(rotatividade_merg,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+
+```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Public Workers Affiliated to Political Party in Power"}
+ggplot(rotatividade_poder,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Career Workers Affiliated to Political Party in Power"}
+ggplot(rotatividade_poder_serv,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Appointed Workers Affiliated to Political Party in Power"}
+ggplot(rotatividade_poder_conf,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+
+
+```{r, results = "asis",message=FALSE}
+stargazer(modelo_1, modelo_2, title = "Regression" ,
+          type = "latex", header = FALSE,
+          covariate.labels = c("Career", "Appointed", "Duration", "Power", "Affiliated", "Constant"),
+          keep.stat=c("n", "adj.rsq"),
+          #column.sep.width = "4pts",
+          #column.labels=c("Murder","Police Killings","Homicide"),
+          #column.separate=c(2,2,2),dep.var.labels=c("","",""),
+          notes.align = "l",
+          font.size = "scriptsize")
+```
+
+## Limitations and Possible Identification Strategy
+
+AUSENCIA DE INFERENCIA CAUSAL
+
+MERGE DAS BASES FEITO SO COM NOMES
+
+INCLUIR MILITARES E TERCEIRIZADOS NA ANALISE
+
+DADOS DA RAIS PARA SEGUIR AS PESSOAS DPS 
+
+
+
+DISCUTIR MATCH PARA IDENTIFICACAO
+
+# Conclusion
+
+CONCLUSAO
+
+# References {-}
+
+<div id="refs"></div>
+
+\appendix
+
+# Appendix {-}
+
+## ANALISE GERAL 
 
 ```{r, fig.cap="\\label{fig:compnet}Career Net Hirings"}
 contratados_tipo %>%
@@ -357,96 +643,31 @@ contratados_tipo %>%
   #           alpha = 0.2, size = 4)
 ```
 
-```{r, fig.cap="\\label{fig:turnover}Turnover of Public Workers"}
-ggplot(rotatividade,aes(x=ano,y=value)) + 
-  geom_line(aes(group = variable, linetype = variable, color = variable),
-            size = 0.8) +
-  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
-                        labels = c("12 Months", "24 Months", "48 Months")) +
-  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
-                        labels = c("12 Months", "24 Months", "48 Months"),
-                      name = "Duration") +
-  geom_point(size = 0.8) +
-  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  labs(y = "Conditional Probability of Dismissal", x= "Year") +
-  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
-  theme_bw() + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold"))   +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
-  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
-  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
-             alpha = 0.5, size = 4)
-```
 
-
-```{r, fig.cap="\\label{fig:turnover}Number of Public Workers Affiliated to a Political Party"}
-ggplot(filiados_ano,aes(x=ano,y=filiado)) + 
-  geom_bar(alpha = 0.5, position = position_dodge(0.8),
-           stat = "identity", width = 0.2,
-           color = "#1e81b0", fill = "#1e81b0") +
-  geom_point(aes(y=filiado), size = 0.8) +
-  geom_text(aes(label = round(filiado/1000,1)),vjust = -0.8,
-            size = 3)+
-  xlab("Year") + ylab("Number of Affiliates") +
-  scale_y_continuous(labels = comma, limits = c(0, 125000)) +
-  theme_bw() + 
-  theme(legend.position = "none",
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 10))
-```
+## ANALISE AFILIADOS
 
 
 ```{r}
+brasil <- read.csv("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input/brasil.csv") %>%
+  filter(ano >= 2013, ano < 2021) %>%
+  mutate(pop = populacao*0.756) %>% #ajustando para populacao acima de 18 anos de acordo com PNS 2019
+  select(ano, pop)
+  
+filiados_tipo <- filiados_tipo %>%
+  left_join(base_ano) %>%
+  left_join(brasil) %>%
+  mutate(ano = as.character(ano),
+         num_filiados = (num_filiados/pop)*100) %>%
+  select(-pop)
+  
 filiados_tipo %>%
   kable(caption = "Proportion of Affiliated Public Workers", booktabs = T,digits = 2,
-      #col.names = c("Mean","Standard Deviaton","%"),
+      col.names = c("Year","Total","Career","Appointed", "Other", "Population Over 18"),
       row.names = F, format.args = list(big.mark = ","),
       align = "c") %>%
   kable_styling(latex_options = c("hold_position"), font_size = 12)
 ```
 
-
-```{r, results='asis',message=F}
-filiados_tipo %>%
-  select(-ano) %>%
-  as.data.frame() %>%
-  stargazer(title = "Summary Statistics for Political Affiliation in the Public Sector",
-            omit.summary.stat = c("n"),
-            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other"),
-            header = F)
-```
-
-
-```{r, fig.cap="\\label{fig:compnet2}Composition of Net Hirings per Category If Affiliated"}
-contratados_filiados %>%
-  filter(ano != 2013,
-         variable %in% c("liq_serv", "liq_conf", "liq_total")) %>%
-  ggplot(aes(x=ano,y=value)) + 
-    geom_line(aes(group = variable, linetype = variable, color = variable),
-              size = 0.8) +
-    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Net Hirings",
-                          labels = c("Appointed", "Total", "Career")) +
-    scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
-                        labels = c("Appointed", "Total", "Career")) +
-    geom_point(size = 0.8) +
-    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-    labs(y = "Number of Public Workers", x= "Year", color = "Net Hirings") +
-    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
-    theme_bw() + 
-    theme(panel.grid.major.x = element_blank(),
-          panel.grid.minor.y = element_blank(),
-          axis.text = element_text(face = "bold"))   +
-    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
-    geom_hline(yintercept=0, linetype="dashed", color = "red") +
-    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
-               alpha = 0.5, size = 4) #+
-  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
-  #           alpha = 0.2, size = 4)
-```
 
 
 ```{r, fig.cap="\\label{fig:careernet2}Career Net Hirings If Affiliated"}
@@ -505,39 +726,4 @@ contratados_filiados %>%
   #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
   #           alpha = 0.2, size = 4)
 ```
-
-
-
-```{r, results = "asis",message=FALSE}
-stargazer(modelo_1, modelo_2, title = "Regression" ,
-          type = "latex", header = FALSE,
-          covariate.labels = c("Career", "Appointed", "Duration", "Power", "Affiliated", "Constant"),
-          keep.stat=c("n", "adj.rsq"),
-          #column.sep.width = "4pts",
-          #column.labels=c("Murder","Police Killings","Homicide"),
-          #column.separate=c(2,2,2),dep.var.labels=c("","",""),
-          notes.align = "l",
-          font.size = "scriptsize")
-```
-
-
-# Roadmap
-
-Table \ref{table:2} describes the planning of the next steps in order to complete this study
-
-\begin{table}[H]
-\centering \begin{tabularx}{\textwidth}{Xc}
-\toprule
-\centering{\textbf{Activity}}                                   & \textbf{Date}            \\ \midrule
-Finish literature review and institutional readings & October 10 -- October 30  \\
-Prepare results                                     & October 10 -- November 26  \\ 
-Prepare the presentation                            & November 26 -- November 28  \\
-Finish the writing                                  & November 20 -- December 02  \\ \midrule
-\end{tabularx}
-\caption{Next steps}
-\label{table:2}
-\end{table}
-
-
-# References 
 
