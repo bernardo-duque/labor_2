@@ -300,6 +300,8 @@ servidores <- servidores %>%
 unicos_2013 <- servidores %>%
   filter(is.na(data_ingresso))
 
+save(unicos_2013, file = "unicos_2013.RData")
+
 print(paste0("Há ",round(((length(unique(unicos_2013$id_servidor)))/
                             length(unique(servidores$id_servidor)))*100,2),
              "% de indivíduos sem data de ingresso na base."))
@@ -862,11 +864,166 @@ g7 <- ggplot(rotatividade,aes(x=ano,y=value)) +
 
 save(g7, file ="descritiva_rotatividade.RData")
 save(rotatividade, file = "base_descritiva_rotatividade.RData")
+rm(g7,anos,colunas,unicos,rotatividade,aux)
+
+### Quebrando por categoria
+
+## Career
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12, Servidor == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24, Servidor == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48, Servidor == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12, Servidor == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24, Servidor == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48, Servidor == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
+
+
+rotatividade_serv <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+## Appointed
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12, Confianca == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24, Confianca == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48, Confianca == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12, Confianca == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24, Confianca == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48, Confianca == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
+
+
+rotatividade_conf <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+save(rotatividade_conf,rotatividade_serv, file = "base_rotatividade_cat.RData")
+rm(rotatividade,rotatividade_conf,rotatividade_serv)
 
 
 ####------ Dando merge na base de filiacao com a dos servidores-----####
 
-rm(g7,anos,colunas,unicos,rotatividade,aux)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 amostra <- readRDS("base_filiacao_limpa.rds")
 servidores_ano <- readRDS(file="base_servidored_painel.rds")
@@ -891,7 +1048,8 @@ duplos_serv <- servidores_ano %>%
   select(id_servidor,nome)
 
 duplos_serv <- duplos_serv[!(duplicated(duplos_serv$nome) |
-                               duplicated(duplos_serv$nome, fromLast = TRUE)), ] %>%
+                             duplicated(duplos_serv$nome, 
+                             fromLast = TRUE)), ] %>%
   select(nome) %>%
   pull
 
@@ -903,7 +1061,8 @@ duplos_am <- amostra %>%
   select(titulo_eleitoral,nome)
 
 duplos_am <- duplos_am[!(duplicated(duplos_am$nome) |
-                               duplicated(duplos_am$nome, fromLast = TRUE)), ] %>%
+                         duplicated(duplos_am$nome, 
+                         fromLast = TRUE)), ] %>%
   select(nome) %>%
   pull
 
@@ -926,15 +1085,15 @@ rm(a,duplos_am,duplos_serv,nomes_retirar,nomes)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 servidores_ano <- readRDS(file = "bases_merged.rds")
+load(file = "unicos_2013.RData")
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 
-# criando dummy para partido da situacao
+# criando dummy para partido que esta no poder (ideal seria coligacao)
 
 servidores_ano <- servidores_ano %>%
-  mutate(poder = ifelse(ano %in% c(2014,2015) & sigla_partido == "PT",1,
+  mutate(poder = ifelse(ano %in% c(2013,2014,2015) & sigla_partido == "PT",1,
                         ifelse(ano %in% c(2016,2017,2018) & sigla_partido == "MDB",1,
-                               ifelse(ano %in% c(2019,2020) & sigla_partido == "PSL",1,0)))) %>%
-  select(-sigla_partido)
+                               ifelse(ano %in% c(2019,2020) & sigla_partido == "PSL",1,0))))
 
 # criando dummy para filiacao em cada ano
 
@@ -955,6 +1114,7 @@ servidores_ano <- servidores_ano %>%
 # pegando quantos servidores publicos eram filiados por ano
 
 filiados_ano <- servidores_ano %>%
+  filter(empregado == 1) %>%
   group_by(ano) %>%
   summarise(filiado = sum(filiado))
 
@@ -965,6 +1125,7 @@ rm(filiados_ano)
 ## pegando qual a proporcao por tipo 
 
 porc_total <- servidores_ano %>%
+  filter(empregado == 1) %>%
   mutate(n = 1) %>%
   group_by(ano) %>%
   summarise(total = (sum(filiado)/sum(n))*100)
@@ -1020,9 +1181,326 @@ contratados_filiados <- servidores_ano %>%
 
 save(contratados_filiados, file = "base_contratados_filiados.RData")
 
-## Calculando turnover para filiados
+### Calculando turnover para filiados
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12, filiado == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24, filiado == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48, filiado == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12, filiado == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24, filiado == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48, filiado == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
 
 
+rotatividade <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+rotatividade_merg <- rotatividade
+
+save(rotatividade_merg, file = "base_rotatividade_merg.RData")
+rm(rotatividade,rotatividade_merg)
+
+### Turnover para quem era do poder e deixa de ser
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12, poder == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24, poder == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48, poder == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12, poder == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder == 0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24, poder == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder == 0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48, poder == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder ==0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
+
+
+rotatividade <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+rotatividade_poder <- rotatividade
+
+save(rotatividade_poder, file = "base_rotatividade_poder.RData")
+rm(rotatividade,rotatividade_poder)
+
+
+# Quebrando por categoria
+
+## Career
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12, poder == 1, Servidor == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24, poder == 1, Servidor == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48, poder == 1, Servidor == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12, poder == 1, Servidor == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder == 0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24, poder == 1, Servidor == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder == 0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48, poder == 1, Servidor == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder ==0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
+
+
+rotatividade <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+rotatividade_poder_serv <- rotatividade
+rm(rotatividade)
+
+## Appointed
+
+aux <- servidores_ano %>%
+  filter(id_servidor %nin% unicos_2013)
+
+# criando a base com a rotatividade
+
+rotatividade <-tibble(ano = 2014:2020,
+                      hazard_12 = NA,
+                      hazard_24 = NA,
+                      hazard_48 = NA,
+                      total_12 = NA,
+                      total_24 = NA,
+                      total_48 = NA)
+
+for (anos in 2014:2020) {
+  
+  rotatividade$total_12[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 12, poder == 1, Confianca == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_24[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 24, poder == 1, Confianca == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  rotatividade$total_48[anos - 2013] <- servidores_ano %>%
+    filter(ano == anos - 1, duracao_mes == 48, poder == 1, Confianca == 1) %>%
+    summarise(n = sum(empregado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 12, poder == 1, Confianca == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder == 0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 24, poder == 1, Confianca == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder == 0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  ids <- aux %>%
+    filter(ano == anos - 1, duracao_mes == 48, poder == 1, Confianca == 1) %>%
+    select(id_servidor) %>% 
+    pull
+  
+  rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
+    filter(id_servidor %in% ids, poder ==0) %>%
+    summarise(n = sum(desligado)) %>%
+    pull
+  
+  
+}
+
+rotatividade <- rotatividade %>%
+  mutate(hazard_12 = (hazard_12/total_12)*100,
+         hazard_24 = (hazard_24/total_24)*100,
+         hazard_48 = (hazard_48/total_48)*100)
+
+
+rotatividade <- rotatividade %>%
+  select(ano,hazard_12:hazard_48) %>%
+  pivot_longer(cols = starts_with("hazard"),names_to = "variable",values_to = "value")
+
+rotatividade_poder_conf <- rotatividade
+
+save(rotatividade_poder_serv,rotatividade_poder_conf, file = "base_rotatividade_poder_cat.RData")
+rm(rotatividade,rotatividade_poder_conf,rotatividade_poder_serv)
 
 ## Regressao
 
