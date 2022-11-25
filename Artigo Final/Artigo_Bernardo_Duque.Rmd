@@ -28,6 +28,8 @@ header-includes:
    citecolor=blue,
  }
  \usepackage[utf8]{inputenc}
+ \usepackage{booktabs}
+ \usepackage{longtable}
  \DeclareUnicodeCharacter{2265}{\geq}
 bibliography: export.bib
 link-citations: true
@@ -45,6 +47,7 @@ library(readr)
 library(kableExtra)
 library(stargazer)
 library(scales)
+library(memisc)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 load(file = "num_part_pess.RData")
@@ -59,7 +62,8 @@ load(file = "base_rotatividade_merg.RData")
 load(file = "base_rotatividade_poder.RData")
 load(file = "base_rotatividade_cat.RData")
 load(file = "base_rotatividade_poder_cat.RData")
-load(file = "modelos.RData")
+load(file = "modelos_pt_1.RData")
+load(file = "modelos_pt_2.RData")
 ```
 
 # Feedbacks Ursula
@@ -547,16 +551,63 @@ ggplot(rotatividade_poder_conf,aes(x=ano,y=value)) +
 
 
 ```{r, results = "asis",message=FALSE}
-stargazer(modelo_1, modelo_2, title = "Regression" ,
-          type = "latex", header = FALSE,
-          covariate.labels = c("Career", "Appointed", "Duration", "Power", "Affiliated", "Constant"),
-          keep.stat=c("n", "adj.rsq"),
-          #column.sep.width = "4pts",
-          #column.labels=c("Murder","Police Killings","Homicide"),
-          #column.separate=c(2,2,2),dep.var.labels=c("","",""),
-          notes.align = "l",
-          font.size = "scriptsize")
+
+#" & One-Way & One-Way & Two-Ways & One-Way & One-Way & Two-Ways \\"
+
 ```
+
+\begin{equation}
+Dismissal_{i,t} = Career_{i,t-1} + Appointed_{i,t-1} + Duration_{i,t-1} + Political_{i,t}
+\end{equation}
+
+\begin{equation}
+Hirings{i,t} = Career_{i,t} + Appointed_{i,t} + Political_{i,t}
+\end{equation}
+
+\begin{center}
+\begin{longtable}{l c c c c c c}
+\caption{Effects of Public Job Type and Affiliation on Dismissals and Hirings}
+\label{reg}\\
+\toprule
+ & \multicolumn{3}{c}{Dismissals} & \multicolumn{3}{c}{Hirings} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+\midrule
+\endfirsthead
+\toprule
+ & \multicolumn{3}{c}{Dismissals} & \multicolumn{3}{c}{Hirings} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & Model 1 & Model 2 & Model 3 & Model 4 & Model 5 & Model 6 \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\multicolumn{7}{l}{\scriptsize{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}\\
+\endlastfoot
+Lag(Career)               & $0.159^{***}$  & $0.159^{***}$  & $0.158^{***}$  &                &                &                \\
+                          & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
+Lag(Appointed)            & $0.006^{***}$  & $0.006^{***}$  & $0.006^{***}$  &                &                &                \\
+                          & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
+Lag(Duration)             & $0.001^{***}$  & $0.001^{***}$  & $0.001^{***}$  &                &                &                \\
+                          & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
+Power                     & $-0.013^{***}$ & $-0.013^{***}$ & $-0.005^{***}$ & $0.007^{***}$  & $0.007^{***}$  & $0.006^{***}$  \\
+                          & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
+Affiliation               &                & $0.001$        & $-0.008^{***}$ &                & $-0.006^{***}$ & $-0.003^{**}$  \\
+                          &                & $(0.001)$      & $(0.001)$      &                & $(0.001)$      & $(0.001)$      \\
+Power * GC &                &                & $0.001$        &                &                & $-0.001$       \\
+                          &                &                & $(0.002)$      &                &                & $(0.002)$      \\
+Career                    &                &                &                & $0.226^{***}$  & $0.226^{***}$  & $0.227^{***}$  \\
+                          &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Appointed                 &                &                &                & $-0.036^{***}$ & $-0.036^{***}$ & $-0.036^{***}$ \\
+                          &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+\midrule
+Individual FE             & Yes            & Yes            & Yes            & Yes            & Yes            & Yes            \\
+Time FE                   & No             & No             & Yes            & No             & No             & Yes            \\
+R$^2$                     & $0.115$        & $0.115$        & $0.115$        & $0.083$        & $0.083$        & $0.083$        \\
+Adj. R$^2$                & $-0.033$       & $-0.033$       & $-0.032$       & $-0.048$       & $-0.048$       & $-0.048$       \\
+Num. obs.                 & $6735092$      & $6735092$      & $6735092$      & $7697248$      & $7697248$      & $7697248$      \\
+\end{longtable}
+\end{center}
 
 ## Limitations and Possible Identification Strategy
 
@@ -665,7 +716,8 @@ filiados_tipo %>%
       col.names = c("Year","Total","Career","Appointed", "Other", "Population Over 18"),
       row.names = F, format.args = list(big.mark = ","),
       align = "c") %>%
-  kable_styling(latex_options = c("hold_position"), font_size = 12)
+  kable_styling(latex_options = c("hold_position"), font_size = 12)# %>%
+  #row_spec(0, border_top=T) %>%
 ```
 
 
