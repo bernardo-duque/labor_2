@@ -5,7 +5,7 @@ pacman::p_load(sf, tidyverse, geobr, ggplot2, terra, spData,
                tidytext, RColorBrewer, tm, grDevices, reshape2, 
                R.utils, readr, data.table, zoo, lubridate,
                stringr, Hmisc,scales, gridExtra, rio, kableExtra,
-               ggpattern, ggfortify)
+               ggpattern, ggfortify,dynlm, plm)
 
 #####----- Base Filiacao ------#####
 
@@ -1086,6 +1086,7 @@ rm(a,duplos_am,duplos_serv,nomes_retirar,nomes)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 servidores_ano <- readRDS(file = "bases_merged.rds")
 load(file = "unicos_2013.RData")
+unicos_2013 <- unique(unicos_2013$id_servidor)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 
 # criando dummy para partido que esta no poder (ideal seria coligacao)
@@ -1504,14 +1505,57 @@ rm(rotatividade,rotatividade_poder_conf,rotatividade_poder_serv)
 
 ## Regressao
 
-modelo_1 <- servidores_ano %>% 
-  group_by(id_servidor) %>%
-  summarise(mod = list(lm(desligado ~ Servidor + Confianca + duracao_mes + poder)))
-modelo_2 <- lm(desligado ~ Servidor + Confianca + duracao_mes + poder)
-modelo_3 <- lm(contratado ~ Servidor + Confianca + poder + filiado, data = servidores_ano)
+servidores_regressao <- servidores_ano %>% 
+  filter(id_servidor %nin% unicos_2013) %>%
+  mutate(mudanca_poder = ifelse(ano %in% c(2015,2017,2019),1,0))
 
-save(modelo_1,modelo_2,modelo_3, file = "modelos.RData")
+modelo_1 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(duracao_mes,1) + poder,
+                data = servidores_regressao, index = c("id_servidor","ano"))
+modelo_2 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(duracao_mes,1) + poder + filiado, 
+                  data = servidores_regressao, index = c("id_servidor","ano"))
+modelo_3 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(duracao_mes,1) + poder + filiado + mudanca_poder*poder, 
+                effect = "twoways",
+                data = servidores_regressao, index = c("id_servidor","ano"))
 
+modelo_4 <- plm(contratado ~ Servidor + Confianca + poder , 
+                data = servidores_regressao, index = c("id_servidor","ano"))
+modelo_5 <- plm(contratado ~ Servidor + Confianca + poder + filiado, 
+                data= servidores_regressao, index = c("id_servidor","ano"))
 
+modelos <- list()
 
+for(i in 1:5){
+  modelos[[i]] <- get(paste0("modelo_",i))
+}
+
+save(modelo_1,modelo_2,modelo_3, modelo_4, modelo_5,file = "modelos_pt_1.RData")
+rm(modelo_1,modelo_2,modelo_3,modelo_4, modelo_5,servidores_ano)
+
+modelo_6 <- plm(contratado ~ Servidor + Confianca  + poder + filiado + mudanca_poder*poder, 
+                effect = "twoways", 
+                data = servidores_regressao, index = c("id_servidor","ano"))
+
+modelos[[6]] <- modelo_6
+
+save(modelo_6,file = "modelos_pt_2.RData")
+rm(modelo_6)
+
+save(modelos,file = "modelos.RData")
+
+# copiar e colar output no console no latex pra tabela sair direito
+# texreg direto e stargazer tao bugados no markdown, por isso copiar e colar
+
+library(texreg)
+
+texreg(modelos)
+
+texreg(modelos,custom.header = list("Dismissals" = 1:3, "Hirings" = 4:6),
+       custom.coef.map = list("lag(Servidor, 1)"="Lag(Career)","lag(Confianca, 1)" ="Lag(Appointed)", 
+                              "lag(duracao_mes, 1)" ="Lag(Duration)","poder" ="Power",
+                              "filiado" ="Affiliation", "poder:mudanca_poder" = "Power * GC",
+                              "Servidor" ="Career","Confianca" = "Appointed"),
+       custom.gof.rows = list("Individual FE" = c("Yes","Yes", "Yes", "Yes", "Yes", "Yes"),
+                              "Time FE" = c("No", "No", "Yes", "No", "No", "Yes")),
+       digits = 3, caption = "Effects of Public Job Type and Affiliation on Dismissals and Hirings",
+       caption.above = T, label = "reg", booktabs = T,longtable = T)
 
