@@ -1,6 +1,5 @@
 ---
-title: "**Political Discrimination Whithin the Public Sector:**"
-subtitle: "**Descriptive Evidence From The Brazilian Federal Government**"
+title: "**Political Affiliation and Federal Government Hirings In Brazil**"
 author: | 
   | Bernardo Duque
   | Paper for Labor II
@@ -47,7 +46,6 @@ library(readr)
 library(kableExtra)
 library(stargazer)
 library(scales)
-library(memisc)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 load(file = "num_part_pess.RData")
@@ -62,8 +60,6 @@ load(file = "base_rotatividade_merg.RData")
 load(file = "base_rotatividade_poder.RData")
 load(file = "base_rotatividade_cat.RData")
 load(file = "base_rotatividade_poder_cat.RData")
-load(file = "modelos_pt_1.RData")
-load(file = "modelos_pt_2.RData")
 ```
 
 # Feedbacks Ursula
@@ -156,7 +152,7 @@ ggplot(t2, aes(x = year, y = porc)) +
   scale_y_continuous(labels = comma) +
   theme_bw() + 
   theme(panel.grid.major.x = element_blank(),
-        #panel.grid.minor.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
         axis.text = element_text(face = "bold")) +
   scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) 
 ```
@@ -249,23 +245,55 @@ I would also use the *Cadastro Nacional de Pessoas Jurídicas* (CNPJ) to get inf
 
 # Descriptive Analysis
 
-## ANALISE GERAL PARA OS TRABALHADORES PUBLICOS
+## Hirings and Dismissals
 
 As I will be working with a lot of different datasets within a limited period of time, this research project will have a descriptive approach, i.e. I will not answer any of the research questions causally. For this reason, it is not yet possible to fully define the statistics I will provide, since ideas might (dis)appear during the exploration of the data. However, henceforth I will discuss some possibilities.
 
 As CPFs are not entirely provided in the data sets^[ The first three and last two digits are omitted.], but I have employees full names, I can merge the databases to get the information I need. I will provide some summary statistics both on political affiliations in Brazil and on the public sector labor market. Next, I will provide some other descriptive statistics by merging all sets of information. For instance, I will be able to indicate how different are affiliations rates between public sector employees and the general population; the number of hirings and dismissals of government workers of all type before and after electoral cycles; and run an heterogeneity analysis in terms of managerial or non-managerial posts. 
 
-In terms of job turnover, I will measure whether it has changed between elections by a hazard function. It indicates the probability that the employment spell will be terminated next month, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I will use an approach adapted from @pb99, where the hazard function for each year will be calculated by:
 
-\begin{equation}
-  h_t(d) = \frac{T_t(d)}{N_t(d)}
-\end{equation}
+```{r, fig.cap="\\label{fig:turnover}Number of Public Workers Affiliated to a Political Party"}
+filiados_ano %>% 
+  ggplot(aes(x=ano,y=filiado)) + 
+  geom_bar(alpha = 0.5, position = position_dodge(0.8),
+           stat = "identity", width = 0.2,
+           color = "#1e81b0", fill = "#1e81b0") +
+  geom_point(aes(y=filiado), size = 0.8) +
+  geom_text(aes(label = round(filiado/1000,1)),vjust = -0.8,
+            size = 3)+
+  xlab("Year") + ylab("Number of Affiliates") +
+  scale_y_continuous(labels = comma, limits = c(0, 125000)) +
+  theme_bw() + 
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 10))
+```
 
-Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ is the number of public sector employments terminated at time $t$ given duration $d$; and $N_t(d)$ is the total number of active employments in the public sector. I will consider $d \in D$, such that $D= \{ 12,24,48 \}$.
 
-If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
+```{r, results='asis',message=F}
+brasil <- read.csv("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input/brasil.csv") %>%
+  filter(ano >= 2013, ano < 2021) %>%
+  mutate(pop = populacao_economicamente_ativa * 1000) %>% 
+  dplyr::select(ano,pop) #ajustando pop acima de 18 anos de acordo com PNS 2019
+  
+filiados_tipo <- filiados_tipo %>%
+  left_join(base_ano) %>%
+  left_join(brasil) %>%
+  mutate(ano = as.character(ano),
+         num_filiados = (num_filiados/pop)*100) %>%
+  dplyr::select(-pop)
 
-DISCUTIR PQ ROTATIVIDADE EH IMPORTANTE
+filiados_tipo %>%
+  dplyr::select(-ano) %>%
+  as.data.frame() %>%
+  stargazer(title = "Summary Statistics for Political Affiliation in the Public Sector",
+            omit.summary.stat = c("n"),
+            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other", "\\% All Labor Force"),
+            header = F, digits = 2)
+```
+
 
 
 ```{r, fig.cap="\\label{fig:nethir}Net Hirings of Public Workers"}
@@ -323,6 +351,50 @@ contratados_tipo %>%
 ```
 
 FALAR QUE A DECOMPOSICAO ESTA NO APENDICE
+
+
+
+```{r, fig.cap="\\label{fig:compnet2}Composition of Net Hirings per Category If Affiliated"}
+contratados_filiados %>%
+  filter(ano != 2013,
+         variable %in% c("liq_serv", "liq_conf", "liq_total")) %>%
+  ggplot(aes(x=ano,y=value)) + 
+    geom_line(aes(group = variable, linetype = variable, color = variable),
+              size = 0.8) +
+    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Net Hirings",
+                          labels = c("Appointed", "Total", "Career")) +
+    scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("Appointed", "Total", "Career")) +
+    geom_point(size = 0.8) +
+    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+    labs(y = "Number of Public Workers", x= "Year", color = "Net Hirings") +
+    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
+    theme_bw() + 
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text = element_text(face = "bold"))   +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+    geom_hline(yintercept=0, linetype="dashed", color = "red") +
+    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+               alpha = 0.5, size = 4) #+
+  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
+  #           alpha = 0.2, size = 4)
+```
+
+
+## Turnover
+
+In terms of job turnover, I will measure whether it has changed between elections by a hazard function. It indicates the probability that the employment spell will be terminated next month, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I will use an approach adapted from @pb99, where the hazard function for each year will be calculated by:
+
+\begin{equation}
+  h_t(d) = \frac{T_t(d)}{N_t(d)}
+\end{equation}
+
+Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ is the number of public sector employments terminated at time $t$ given duration $d$; and $N_t(d)$ is the total number of active employments in the public sector. I will consider $d \in D$, such that $D= \{ 12,24,48 \}$.
+
+If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
+
+DISCUTIR PQ ROTATIVIDADE EH IMPORTANTE
 
 ```{r, fig.cap="\\label{fig:turnover}Turnover of Public Workers"}
 ggplot(rotatividade,aes(x=ano,y=value)) + 
@@ -392,67 +464,6 @@ ggplot(rotatividade_conf,aes(x=ano,y=value)) +
   geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
              alpha = 0.5, size = 4)
 ```
-
-## ANALISE PARA TRABALHADORES AFILIADOS
-
-```{r, fig.cap="\\label{fig:turnover}Number of Public Workers Affiliated to a Political Party"}
-filiados_ano %>% 
-  ggplot(aes(x=ano,y=filiado)) + 
-  geom_bar(alpha = 0.5, position = position_dodge(0.8),
-           stat = "identity", width = 0.2,
-           color = "#1e81b0", fill = "#1e81b0") +
-  geom_point(aes(y=filiado), size = 0.8) +
-  geom_text(aes(label = round(filiado/1000,1)),vjust = -0.8,
-            size = 3)+
-  xlab("Year") + ylab("Number of Affiliates") +
-  scale_y_continuous(labels = comma, limits = c(0, 125000)) +
-  theme_bw() + 
-  theme(legend.position = "none",
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold")) +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 10))
-```
-
-
-```{r, results='asis',message=F}
-filiados_tipo %>%
-  select(-ano) %>%
-  as.data.frame() %>%
-  stargazer(title = "Summary Statistics for Political Affiliation in the Public Sector",
-            omit.summary.stat = c("n"),
-            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other", "\\% Population Over 18"),
-            header = F, digits = 2)
-```
-
-
-```{r, fig.cap="\\label{fig:compnet2}Composition of Net Hirings per Category If Affiliated"}
-contratados_filiados %>%
-  filter(ano != 2013,
-         variable %in% c("liq_serv", "liq_conf", "liq_total")) %>%
-  ggplot(aes(x=ano,y=value)) + 
-    geom_line(aes(group = variable, linetype = variable, color = variable),
-              size = 0.8) +
-    scale_linetype_manual(values = c("longdash","twodash","solid"), name = "Net Hirings",
-                          labels = c("Appointed", "Total", "Career")) +
-    scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
-                        labels = c("Appointed", "Total", "Career")) +
-    geom_point(size = 0.8) +
-    #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-    labs(y = "Number of Public Workers", x= "Year", color = "Net Hirings") +
-    scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 5)) +
-    theme_bw() + 
-    theme(panel.grid.major.x = element_blank(),
-          panel.grid.minor.y = element_blank(),
-          axis.text = element_text(face = "bold"))   +
-    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
-    geom_hline(yintercept=0, linetype="dashed", color = "red") +
-    geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
-               alpha = 0.5, size = 4) #+
-  #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
-  #           alpha = 0.2, size = 4)
-```
-
 
 
 ```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Affiliated Public Workers"}
@@ -549,12 +560,7 @@ ggplot(rotatividade_poder_conf,aes(x=ano,y=value)) +
 ```
 
 
-
-```{r, results = "asis",message=FALSE}
-
-#" & One-Way & One-Way & Two-Ways & One-Way & One-Way & Two-Ways \\"
-
-```
+## Job Type, Affiliation, Dismissals and Hirings
 
 \begin{equation}
 Dismissal_{i,t} = Career_{i,t-1} + Appointed_{i,t-1} + Duration_{i,t-1} + Political_{i,t}
@@ -565,48 +571,51 @@ Hirings{i,t} = Career_{i,t} + Appointed_{i,t} + Political_{i,t}
 \end{equation}
 
 \begin{center}
+\begin{scriptsize}
 \begin{longtable}{l c c c c c c}
-\caption{Effects of Public Job Type and Affiliation on Dismissals and Hirings}
+\caption{Variation of Public Job Type and Affiliation on Dismissals and Hirings}
 \label{reg}\\
 \toprule
  & \multicolumn{3}{c}{Dismissals} & \multicolumn{3}{c}{Hirings} \\
 \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & (1) & (2) & (3) & (4) & (5) & (6) \\
 \midrule
 \endfirsthead
 \toprule
  & \multicolumn{3}{c}{Dismissals} & \multicolumn{3}{c}{Hirings} \\
 \cmidrule(lr){2-4} \cmidrule(lr){5-7}
- & Model 1 & Model 2 & Model 3 & Model 4 & Model 5 & Model 6 \\
+ & (1) & (2) & (3) & (4) & (5) & (6) \\
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \bottomrule
-\multicolumn{7}{l}{\scriptsize{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}\\
+\multicolumn{7}{l}{\tiny{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}\\
 \endlastfoot
-Lag(Career)               & $0.159^{***}$  & $0.159^{***}$  & $0.158^{***}$  &                &                &                \\
-                          & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
-Lag(Appointed)            & $0.006^{***}$  & $0.006^{***}$  & $0.006^{***}$  &                &                &                \\
-                          & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
-Lag(Duration)             & $0.001^{***}$  & $0.001^{***}$  & $0.001^{***}$  &                &                &                \\
-                          & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
-Power                     & $-0.013^{***}$ & $-0.013^{***}$ & $-0.005^{***}$ & $0.007^{***}$  & $0.007^{***}$  & $0.006^{***}$  \\
-                          & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
-Affiliation               &                & $0.001$        & $-0.008^{***}$ &                & $-0.006^{***}$ & $-0.003^{**}$  \\
-                          &                & $(0.001)$      & $(0.001)$      &                & $(0.001)$      & $(0.001)$      \\
-Power * GC &                &                & $0.001$        &                &                & $-0.001$       \\
-                          &                &                & $(0.002)$      &                &                & $(0.002)$      \\
-Career                    &                &                &                & $0.226^{***}$  & $0.226^{***}$  & $0.227^{***}$  \\
-                          &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
-Appointed                 &                &                &                & $-0.036^{***}$ & $-0.036^{***}$ & $-0.036^{***}$ \\
-                          &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Lag(Career)    & $0.159^{***}$  & $0.159^{***}$  & $0.158^{***}$  &                &                &                \\
+               & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
+Lag(Appointed) & $0.006^{***}$  & $0.006^{***}$  & $0.006^{***}$  &                &                &                \\
+               & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
+Lag(Duration)  & $0.001^{***}$  & $0.001^{***}$  & $0.001^{***}$  &                &                &                \\
+               & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
+Power          & $-0.013^{***}$ & $-0.013^{***}$ & $-0.005^{***}$ & $0.007^{***}$  & $0.007^{***}$  & $0.006^{***}$  \\
+               & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
+Affiliation    &                & $0.001$        & $-0.008^{***}$ &                & $-0.006^{***}$ & $-0.003^{**}$  \\
+               &                & $(0.001)$      & $(0.001)$      &                & $(0.001)$      & $(0.001)$      \\
+Power * GC     &                &                & $0.001$        &                &                & $-0.001$       \\
+               &                &                & $(0.002)$      &                &                & $(0.002)$      \\
+Career         &                &                &                & $0.226^{***}$  & $0.226^{***}$  & $0.227^{***}$  \\
+               &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Appointed      &                &                &                & $-0.036^{***}$ & $-0.036^{***}$ & $-0.036^{***}$ \\
+               &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
 \midrule
-Individual FE             & Yes            & Yes            & Yes            & Yes            & Yes            & Yes            \\
-Time FE                   & No             & No             & Yes            & No             & No             & Yes            \\
-R$^2$                     & $0.115$        & $0.115$        & $0.115$        & $0.083$        & $0.083$        & $0.083$        \\
-Adj. R$^2$                & $-0.033$       & $-0.033$       & $-0.032$       & $-0.048$       & $-0.048$       & $-0.048$       \\
-Num. obs.                 & $6735092$      & $6735092$      & $6735092$      & $7697248$      & $7697248$      & $7697248$      \\
+Individual FE  & Yes            & Yes            & Yes            & Yes            & Yes            & Yes            \\
+Time FE        & No             & No             & Yes            & No             & No             & Yes            \\
+R$^2$          & $0.115$        & $0.115$        & $0.115$        & $0.083$        & $0.083$        & $0.083$        \\
+Adj. R$^2$     & $-0.033$       & $-0.033$       & $-0.032$       & $-0.048$       & $-0.048$       & $-0.048$       \\
+Num. obs.      & $6735092$      & $6735092$      & $6735092$      & $7697248$      & $7697248$      & $7697248$      \\
 \end{longtable}
+\end{scriptsize}
 \end{center}
 
 ## Limitations and Possible Identification Strategy
@@ -699,21 +708,10 @@ contratados_tipo %>%
 
 
 ```{r}
-brasil <- read.csv("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input/brasil.csv") %>%
-  filter(ano >= 2013, ano < 2021) %>%
-  mutate(pop = populacao*0.756) %>% #ajustando para populacao acima de 18 anos de acordo com PNS 2019
-  select(ano, pop)
-  
-filiados_tipo <- filiados_tipo %>%
-  left_join(base_ano) %>%
-  left_join(brasil) %>%
-  mutate(ano = as.character(ano),
-         num_filiados = (num_filiados/pop)*100) %>%
-  select(-pop)
   
 filiados_tipo %>%
   kable(caption = "Proportion of Affiliated Public Workers", booktabs = T,digits = 2,
-      col.names = c("Year","Total","Career","Appointed", "Other", "Population Over 18"),
+      col.names = c("Year","Total","Career","Appointed", "Other", "All Labor Force"),
       row.names = F, format.args = list(big.mark = ","),
       align = "c") %>%
   kable_styling(latex_options = c("hold_position"), font_size = 12)# %>%
