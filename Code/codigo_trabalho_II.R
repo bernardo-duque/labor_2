@@ -767,6 +767,11 @@ rm(contratados,contratados_tipo,g5,g6,servidores_wide,dupl,ids)
 
 ####----- Criando variavel de rotatividade-----####
 
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
+servidores_ano <- readRDS(file="base_servidored_painel.rds")
+load(file = "unicos_2013.RData")
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+
 # removendo os ids que nao tinham data de ingresso para computar rotatividade
 
 unicos_2013 <- unique(unicos_2013$id_servidor)
@@ -1506,7 +1511,7 @@ rm(rotatividade,rotatividade_poder_conf,rotatividade_poder_serv)
 ## Regressao
 
 servidores_regressao <- servidores_ano %>% 
-  filter(id_servidor %nin% unicos_2013) %>%
+  filter(id_servidor %nin% unicos_2013) %>% #tirando os que nao tem data de ingresso 
   mutate(mudanca_poder = ifelse(ano %in% c(2015,2017,2019),1,0))
 
 saveRDS(servidores_regressao, file = "servidores_regressao.rds")
