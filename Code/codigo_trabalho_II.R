@@ -769,7 +769,7 @@ rm(contratados,contratados_tipo,g5,g6,servidores_wide,dupl,ids)
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Input")
 servidores_ano <- readRDS(file="base_servidored_painel.rds")
-load(file = "unicos_2013.RData")
+unicos_2013 <- unique(unicos_2013$id_servidor)
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 
 # removendo os ids que nao tinham data de ingresso para computar rotatividade
@@ -781,7 +781,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -812,7 +812,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -822,7 +822,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -832,7 +832,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -880,7 +880,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -911,7 +911,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -921,7 +921,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -931,7 +931,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -955,7 +955,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -986,7 +986,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -996,7 +996,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1006,7 +1006,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1194,7 +1194,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -1225,7 +1225,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1235,7 +1235,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1245,7 +1245,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1274,7 +1274,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -1357,7 +1357,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -1388,7 +1388,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1398,7 +1398,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos,poder == 0) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1408,7 +1408,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, poder ==0) %>%
+    filter(id_servidor %in% ids, ano == anos,poder ==0) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1435,7 +1435,7 @@ aux <- servidores_ano %>%
 
 # criando a base com a rotatividade
 
-rotatividade <-tibble(ano = 2014:2020,
+rotatividade <-tibble(ano = 2013:2019,
                       hazard_12 = NA,
                       hazard_24 = NA,
                       hazard_48 = NA,
@@ -1466,7 +1466,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1476,7 +1476,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1486,7 +1486,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, poder ==0) %>%
+    filter(id_servidor %in% ids, ano == anos, poder ==0) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
