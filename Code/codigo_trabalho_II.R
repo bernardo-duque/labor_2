@@ -1509,11 +1509,17 @@ servidores_regressao <- servidores_ano %>%
   filter(id_servidor %nin% unicos_2013) %>%
   mutate(mudanca_poder = ifelse(ano %in% c(2015,2017,2019),1,0))
 
-modelo_1 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(duracao_mes,1) + poder,
-                data = servidores_regressao, index = c("id_servidor","ano"))
-modelo_2 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(duracao_mes,1) + poder + filiado, 
+saveRDS(servidores_regressao, file = "servidores_regressao.rds")
+
+setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
+servidores_regressao <- readRDS(file = "servidores_regressao.rds")
+
+modelo_1 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(Outros,1) + lag(duracao_mes,1) + poder + filiado,
+                data = servidores_regressao, index = c("id_servidor","ano"),
+                model = "pooling")
+modelo_2 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(Outros,1) + lag(duracao_mes,1) + poder + filiado, 
                   data = servidores_regressao, index = c("id_servidor","ano"))
-modelo_3 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(duracao_mes,1) + poder + filiado + mudanca_poder*poder, 
+modelo_3 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(Outros,1) + lag(duracao_mes,1) + poder + filiado + poder*lag(Servidor,1) + poder*lag(Confianca,1) + lag(poder,1)*mudanca_poder, 
                 effect = "twoways",
                 data = servidores_regressao, index = c("id_servidor","ano"))
 
@@ -1547,15 +1553,19 @@ save(modelos,file = "modelos.RData")
 
 library(texreg)
 
-texreg(modelos)
+texreg(list(modelo_1,modelo_2,modelo_3))
 
 texreg(modelos,custom.header = list("Dismissals" = 1:3, "Hirings" = 4:6),
-       custom.coef.map = list("lag(Servidor, 1)"="Lag(Career)","lag(Confianca, 1)" ="Lag(Appointed)", 
-                              "lag(duracao_mes, 1)" ="Lag(Duration)","poder" ="Power",
-                              "filiado" ="Affiliation", "poder:mudanca_poder" = "Power * GC",
+       custom.coef.map = list("lag(Servidor, 1)"="Lag(Career)","lag(Confianca, 1)" ="Lag(Appointed)",
+                              "lag(Outros,1)"="Lag(Other)","lag(duracao_mes, 1)" ="Lag(Duration)",
+                              "poder" ="Power","filiado" ="Affiliation", 
+                              "mudanca_poder:lag(poder,1):lag(Servidor,1)" = "Lag(Career*Power)*GC",
+                              "mudanca_poder:lag(poder,1):lag(Confianca,1)" = "Lag(Appointed*Power)*GC",
                               "Servidor" ="Career","Confianca" = "Appointed"),
-       custom.gof.rows = list("Individual FE" = c("Yes","Yes", "Yes", "Yes", "Yes", "Yes"),
+       custom.gof.rows = list("Individual FE" = c("No","Yes", "Yes", "No", "Yes", "Yes"),
                               "Time FE" = c("No", "No", "Yes", "No", "No", "Yes")),
-       digits = 3, caption = "Effects of Public Job Type and Affiliation on Dismissals and Hirings",
-       caption.above = T, label = "reg", booktabs = T,longtable = T)
+       digits = 3, caption = "Variation of Public Job Type and Affiliation on Dismissals and Hirings",
+       caption.above = T, label = "reg", booktabs = T,longtable = T,
+       custom.model.names	= c("(1)","(2)", "(3)", "(4)", "(5)", "(6)"),
+       fontsize = "small")
 
