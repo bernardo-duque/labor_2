@@ -1267,7 +1267,7 @@ rotatividade_merg <- rotatividade
 save(rotatividade_merg, file = "base_rotatividade_merg.RData")
 rm(rotatividade,rotatividade_merg)
 
-### Turnover para quem era do poder e deixa de ser
+### Turnover para quem era do poder
 
 aux <- servidores_ano %>%
   filter(id_servidor %nin% unicos_2013)
@@ -1305,7 +1305,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1315,7 +1315,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1325,7 +1325,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder ==0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1388,7 +1388,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1398,7 +1398,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos,poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1408,7 +1408,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos,poder ==0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1466,7 +1466,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_12[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1476,7 +1476,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_24[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder == 0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
@@ -1486,7 +1486,7 @@ for (anos in 2014:2020) {
     pull
   
   rotatividade$hazard_48[anos - 2013] <- servidores_ano %>%
-    filter(id_servidor %in% ids, ano == anos, poder ==0) %>%
+    filter(id_servidor %in% ids, ano == anos) %>%
     summarise(n = sum(desligado)) %>%
     pull
   
