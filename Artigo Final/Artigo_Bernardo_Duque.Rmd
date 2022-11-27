@@ -230,7 +230,7 @@ ggplot(partidos_ano, aes(x=anos, y=num_fil, group = sigla_partido)) +
 
 DESCREVER OQ FOI FEITO NO R
 
-I will use a few data sets to construct my final database. First, I will use data from *Tribunal Superior Eleitoral* (TSE -- Brazil's electoral high court) to obtain all political affiliations of every individual in the country for the period of analysis. It contains information on the date of affiliation, political party's identifier, name and CPF (national identifier), affiliation's current situation and city identifier. 
+I will use a few data sets to construct my final database. First, I will use data from *Tribunal Superior Eleitoral* (TSE -- Brazil's electoral high court) to obtain all political affiliations of every individual in the country for the period of analysis. It contains information on the affiliation date, political party's identifier, name and CPF (national identifier), affiliation's current situation and city identifier. 
 
 Furthermore, I will also use two similar datasets to get information on public sector employees on the federal level of the executive branch. Both have very similar information but one is related to direct public employments whilst the other refers to outsourced workers. 
 
@@ -513,109 +513,115 @@ ggplot(rotatividade_poder,aes(x=ano,y=value)) +
              alpha = 0.5, size = 4)
 ```
 
-```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Career Workers Affiliated to Political Party in Power"}
-ggplot(rotatividade_poder_serv,aes(x=ano,y=value)) + 
-  geom_line(aes(group = variable, linetype = variable, color = variable),
-            size = 0.8) +
-  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
-                        labels = c("12 Months", "24 Months", "48 Months")) +
-  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
-                        labels = c("12 Months", "24 Months", "48 Months"),
-                      name = "Duration") +
-  geom_point(size = 0.8) +
-  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  labs(y = "Conditional Probability of Dismissal", x= "Year") +
-  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
-  theme_bw() + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold"))   +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
-  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
-  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
-             alpha = 0.5, size = 4)
-```
-
-```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Appointed Workers Affiliated to Political Party in Power"}
-ggplot(rotatividade_poder_conf,aes(x=ano,y=value)) + 
-  geom_line(aes(group = variable, linetype = variable, color = variable),
-            size = 0.8) +
-  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
-                        labels = c("12 Months", "24 Months", "48 Months")) +
-  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
-                        labels = c("12 Months", "24 Months", "48 Months"),
-                      name = "Duration") +
-  geom_point(size = 0.8) +
-  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
-  labs(y = "Conditional Probability of Dismissal", x= "Year") +
-  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
-  theme_bw() + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        axis.text = element_text(face = "bold"))   +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
-  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
-  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
-             alpha = 0.5, size = 4)
-```
-
+FALAR DO APENDICE
 
 ## Job Type, Affiliation, Dismissals and Hirings
 
-\begin{equation}
-Dismissal_{i,t} = Career_{i,t-1} + Appointed_{i,t-1} + Duration_{i,t-1} + Political_{i,t}
-\end{equation}
-
-\begin{equation}
-Hirings{i,t} = Career_{i,t} + Appointed_{i,t} + Political_{i,t}
-\end{equation}
 
 \begin{center}
-\begin{scriptsize}
-\begin{longtable}{l c c c c c c}
-\caption{Variation of Public Job Type and Affiliation on Dismissals and Hirings}
+\begin{small}
+\begin{longtable}{l c c c c c c c}
+\caption{Affiliation and Dismissals Correlation}
 \label{reg}\\
 \toprule
- & \multicolumn{3}{c}{Dismissals} & \multicolumn{3}{c}{Hirings} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
- & (1) & (2) & (3) & (4) & (5) & (6) \\
+ & \multicolumn{7}{c}{Dismissals} \\
+\cmidrule(lr){2-8}
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
 \midrule
 \endfirsthead
 \toprule
- & \multicolumn{3}{c}{Dismissals} & \multicolumn{3}{c}{Hirings} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
- & (1) & (2) & (3) & (4) & (5) & (6) \\
+ & \multicolumn{7}{c}{Dismissals} \\
+\cmidrule(lr){2-8}
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
 \midrule
 \endhead
 \bottomrule
 \endfoot
 \bottomrule
-\multicolumn{7}{l}{\tiny{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}\\
+\multicolumn{8}{l}{\tiny{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}\\
 \endlastfoot
-Lag(Career)    & $0.159^{***}$  & $0.159^{***}$  & $0.158^{***}$  &                &                &                \\
-               & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
-Lag(Appointed) & $0.006^{***}$  & $0.006^{***}$  & $0.006^{***}$  &                &                &                \\
-               & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
-Lag(Duration)  & $0.001^{***}$  & $0.001^{***}$  & $0.001^{***}$  &                &                &                \\
-               & $(0.000)$      & $(0.000)$      & $(0.000)$      &                &                &                \\
-Power          & $-0.013^{***}$ & $-0.013^{***}$ & $-0.005^{***}$ & $0.007^{***}$  & $0.007^{***}$  & $0.006^{***}$  \\
-               & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
-Affiliation    &                & $0.001$        & $-0.008^{***}$ &                & $-0.006^{***}$ & $-0.003^{**}$  \\
-               &                & $(0.001)$      & $(0.001)$      &                & $(0.001)$      & $(0.001)$      \\
-Power * GC     &                &                & $0.001$        &                &                & $-0.001$       \\
-               &                &                & $(0.002)$      &                &                & $(0.002)$      \\
-Career         &                &                &                & $0.226^{***}$  & $0.226^{***}$  & $0.227^{***}$  \\
-               &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
-Appointed      &                &                &                & $-0.036^{***}$ & $-0.036^{***}$ & $-0.036^{***}$ \\
-               &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Power                & $-0.006^{***}$ & $-0.012^{***}$ & $-0.014^{***}$ & $-0.014^{***}$ & $-0.003$       & $0.002$        & $-0.007^{***}$ \\
+                     & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.002)$      & $(0.002)$      & $(0.002)$      \\
+Affiliation          & $-0.003^{***}$ & $0.004^{***}$  & $-0.005^{***}$ & $-0.005^{***}$ & $-0.005^{***}$ & $-0.010^{***}$ & $-0.005^{***}$ \\
+                     & $(0.000)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
+Lag(Duration)        & $0.000^{***}$  & $0.001^{***}$  & $0.000^{***}$  & $0.000^{***}$  & $0.000^{***}$  & $0.000^{***}$  & $0.000^{***}$  \\
+                     & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Lag(Out of Gov)      &                &                & $-0.255^{***}$ & $-0.379^{***}$ & $-0.379^{***}$ & $-0.377^{***}$ & $-0.379^{***}$ \\
+                     &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Lag(Career)          &                &                &                & $-0.201^{***}$ & $-0.201^{***}$ & $-0.200^{***}$ & $-0.201^{***}$ \\
+                     &                &                &                & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
+Lag(Appointed)       &                &                &                & $-0.025^{***}$ & $-0.025^{***}$ & $-0.024^{***}$ & $-0.025^{***}$ \\
+                     &                &                &                & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Lag(Career)*Power    &                &                &                &                & $-0.014^{***}$ & $-0.013^{***}$ & $-0.014^{***}$ \\
+                     &                &                &                &                & $(0.002)$      & $(0.002)$      & $(0.002)$      \\
+Lag(Appointed)*Power &                &                &                &                & $-0.017^{***}$ & $-0.017^{***}$ & $-0.017^{***}$ \\
+                     &                &                &                &                & $(0.003)$      & $(0.003)$      & $(0.003)$      \\
+GC                   &                &                &                &                &                &                & $0.003^{***}$  \\
+                     &                &                &                &                &                &                & $(0.000)$      \\
+GC*Lag(Power)        &                &                &                &                &                &                & $0.009^{***}$  \\
+                     &                &                &                &                &                &                & $(0.001)$      \\
 \midrule
-Individual FE  & Yes            & Yes            & Yes            & Yes            & Yes            & Yes            \\
-Time FE        & No             & No             & Yes            & No             & No             & Yes            \\
-R$^2$          & $0.115$        & $0.115$        & $0.115$        & $0.083$        & $0.083$        & $0.083$        \\
-Adj. R$^2$     & $-0.033$       & $-0.033$       & $-0.032$       & $-0.048$       & $-0.048$       & $-0.048$       \\
-Num. obs.      & $6735092$      & $6735092$      & $6735092$      & $7697248$      & $7697248$      & $7697248$      \\
+Individual FE        & No             & Yes            & Yes            & Yes            & Yes            & Yes            & Yes            \\
+Time FE              & No             & No             & No             & No             & No             & Yes            & No            \\
+R$^2$                & $0.010$        & $0.091$        & $0.188$        & $0.204$        & $0.204$        & $0.204$        & $0.205$        \\
+Adj. R$^2$           & $0.010$        & $-0.061$       & $0.053$        & $0.072$        & $0.072$        & $0.071$        & $0.072$        \\
+Num. obs.            & $6735092$      & $6735092$      & $6735092$      & $6735092$      & $6735092$      & $6735092$      & $6735092$      \\
 \end{longtable}
-\end{scriptsize}
+\end{small}
+\end{center}
+
+
+
+
+
+\begin{center}
+\begin{small}
+\begin{longtable}{l c c c c c c c}
+\caption{Affiliation and Hirings Correlation}
+\label{reg}\\
+\toprule
+ & \multicolumn{7}{c}{Hirings} \\
+\cmidrule(lr){2-8}
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
+\midrule
+\endfirsthead
+\toprule
+ & \multicolumn{7}{c}{Hirings} \\
+\cmidrule(lr){2-8}
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\multicolumn{8}{l}{\tiny{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}\\
+\endlastfoot
+Power           & $0.004^{***}$  & $0.010^{***}$ & $0.013^{***}$  & $0.005^{***}$  & $0.023^{***}$  & $0.026^{***}$  & $0.017^{***}$  \\
+                & $(0.001)$      & $(0.001)$     & $(0.001)$      & $(0.001)$      & $(0.002)$      & $(0.002)$      & $(0.002)$      \\
+Affiliation     & $-0.017^{***}$ & $0.006^{***}$ & $0.016^{***}$  & $0.006^{***}$  & $0.006^{***}$  & $0.003^{**}$   & $0.006^{***}$  \\
+                & $(0.000)$      & $(0.001)$     & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      & $(0.001)$      \\
+Lag(In the Gov) &                &               & $-0.226^{***}$ & $-0.414^{***}$ & $-0.414^{***}$ & $-0.415^{***}$ & $-0.414^{***}$ \\
+                &                &               & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Career          &                &               &                & $0.458^{***}$  & $0.458^{***}$  & $0.460^{***}$  & $0.459^{***}$  \\
+                &                &               &                & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Appointed       &                &               &                & $0.008^{***}$  & $0.007^{***}$  & $0.008^{***}$  & $0.007^{***}$  \\
+                &                &               &                & $(0.000)$      & $(0.000)$      & $(0.000)$      & $(0.000)$      \\
+Career*Power    &                &               &                &                & $-0.036^{***}$ & $-0.035^{***}$ & $-0.036^{***}$ \\
+                &                &               &                &                & $(0.002)$      & $(0.002)$      & $(0.002)$      \\
+Appointed*Power &                &               &                &                & $0.048^{***}$  & $0.048^{***}$  & $0.048^{***}$  \\
+                &                &               &                &                & $(0.002)$      & $(0.002)$      & $(0.002)$      \\
+GC              &                &               &                &                &                &                & $0.007^{***}$  \\
+                &                &               &                &                &                &                & $(0.000)$      \\
+GC*Lag(Power)   &                &               &                &                &                &                & $-0.001$       \\
+                &                &               &                &                &                &                & $(0.001)$      \\
+\midrule
+Individual FE   & No             & Yes           & Yes            & Yes            & Yes            & Yes            & Yes            \\
+Time FE         & No             & No            & No             & No             & No             & Yes            & No             \\
+R$^2$           & $0.000$        & $0.000$       & $0.098$        & $0.340$        & $0.340$        & $0.340$        & $0.340$        \\
+Adj. R$^2$      & $0.000$        & $-0.143$      & $-0.053$       & $0.230$        & $0.230$        & $0.230$        & $0.230$        \\
+Num. obs.       & $7697248$      & $7697248$     & $6735092$      & $6735092$      & $6735092$      & $6735092$      & $6735092$      \\
+\end{longtable}
+\end{small}
 \end{center}
 
 ## Limitations and Possible Identification Strategy
@@ -627,6 +633,8 @@ MERGE DAS BASES FEITO SO COM NOMES
 INCLUIR MILITARES E TERCEIRIZADOS NA ANALISE
 
 DADOS DA RAIS PARA SEGUIR AS PESSOAS DPS 
+
+OLHAR PARA REALOCACOES
 
 
 
@@ -642,9 +650,9 @@ CONCLUSAO
 
 \appendix
 
-# Appendix {-}
+# Appendix
 
-## ANALISE GERAL 
+## Hirings and Dismissals
 
 ```{r, fig.cap="\\label{fig:compnet}Career Net Hirings"}
 contratados_tipo %>%
@@ -702,9 +710,6 @@ contratados_tipo %>%
   #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
   #           alpha = 0.2, size = 4)
 ```
-
-
-## ANALISE AFILIADOS
 
 
 ```{r}
@@ -775,5 +780,55 @@ contratados_filiados %>%
                alpha = 0.5, size = 4) #+
   #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
   #           alpha = 0.2, size = 4)
+```
+
+
+## Turnover
+
+
+```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Career Workers Affiliated to Political Party in Power"}
+ggplot(rotatividade_poder_serv,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
+```
+
+```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Appointed Workers Affiliated to Political Party in Power"}
+ggplot(rotatividade_poder_conf,aes(x=ano,y=value)) + 
+  geom_line(aes(group = variable, linetype = variable, color = variable),
+            size = 0.8) +
+  scale_linetype_manual(values = c("solid","twodash","longdash"), name = "Duration",
+                        labels = c("12 Months", "24 Months", "48 Months")) +
+  scale_colour_manual(values=c("#21130d", "#76b5c5", "#1e81b0"),
+                        labels = c("12 Months", "24 Months", "48 Months"),
+                      name = "Duration") +
+  geom_point(size = 0.8) +
+  #  geom_text(aes(label = num_empreg),vjust = -0.8)+
+  labs(y = "Conditional Probability of Dismissal", x= "Year") +
+  scale_y_continuous(labels = comma, breaks = scales::breaks_pretty(n = 4)) +
+  theme_bw() + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text = element_text(face = "bold"))   +
+  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) + 
+  #geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  geom_vline(xintercept=c(2014,2016,2018), linetype="solid", color = "grey",
+             alpha = 0.5, size = 4)
 ```
 
