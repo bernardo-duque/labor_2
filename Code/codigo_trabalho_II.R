@@ -1512,65 +1512,128 @@ rm(rotatividade,rotatividade_poder_conf,rotatividade_poder_serv)
 
 servidores_regressao <- servidores_ano %>% 
   filter(id_servidor %nin% unicos_2013) %>% #tirando os que nao tem data de ingresso 
-  mutate(mudanca_poder = ifelse(ano %in% c(2015,2017,2019),1,0))
+  mutate(mudanca_poder = ifelse(ano %in% c(2015,2017,2019),1,0),
+         desempregado = ifelse(empregado == 0,1,0))
 
 saveRDS(servidores_regressao, file = "servidores_regressao.rds")
 
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 servidores_regressao <- readRDS(file = "servidores_regressao.rds")
 
-modelo_1 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(Outros,1) + lag(duracao_mes,1) + poder + filiado,
+# para desligados
+
+modelo_1 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1),
                 data = servidores_regressao, index = c("id_servidor","ano"),
                 model = "pooling")
-modelo_2 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(Outros,1) + lag(duracao_mes,1) + poder + filiado, 
-                  data = servidores_regressao, index = c("id_servidor","ano"))
-modelo_3 <- plm(desligado ~ lag(Servidor,1) + lag(Confianca,1) + lag(Outros,1) + lag(duracao_mes,1) + poder + filiado + poder*lag(Servidor,1) + poder*lag(Confianca,1) + lag(poder,1)*mudanca_poder, 
-                effect = "twoways",
+modelo_2 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1),
+                data = servidores_regressao, index = c("id_servidor","ano"),
+                model = "within")
+modelo_3 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1) + lag(desempregado),
+                  model = "within",
                 data = servidores_regressao, index = c("id_servidor","ano"))
 
-modelo_4 <- plm(contratado ~ Servidor + Confianca + poder , 
+modelo_4 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1) + lag(desempregado) + lag(Servidor) + lag(Confianca),
+                model = "within",
                 data = servidores_regressao, index = c("id_servidor","ano"))
-modelo_5 <- plm(contratado ~ Servidor + Confianca + poder + filiado, 
+modelo_5 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1) + lag(desempregado) + lag(Servidor) + lag(Confianca) + lag(Servidor)*poder + lag(Confianca)*poder,
+                model = "within",
                 data= servidores_regressao, index = c("id_servidor","ano"))
 
-modelos <- list()
+modelo_6 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1) + lag(desempregado) + lag(Servidor) + lag(Confianca) + lag(Servidor)*poder + lag(Confianca)*poder,
+                effect = "twoways",
+                data= servidores_regressao, index = c("id_servidor","ano"))
+modelo_7 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1) + lag(desempregado) + lag(Servidor) + lag(Confianca) + lag(Servidor)*poder + lag(Confianca)*poder + mudanca_poder + lag(poder)*mudanca_poder + lag(poder),
+                model = "within",
+                data= servidores_regressao, index = c("id_servidor","ano"))
 
-for(i in 1:5){
-  modelos[[i]] <- get(paste0("modelo_",i))
+modelos_desligado <- list()
+
+for(i in 1:7){
+  modelos_desligado[[i]] <- get(paste0("modelo_",i))
 }
 
-save(modelo_1,modelo_2,modelo_3, modelo_4, modelo_5,file = "modelos_pt_1.RData")
-rm(modelo_1,modelo_2,modelo_3,modelo_4, modelo_5,servidores_ano)
+rm(modelo_1,modelo_2,modelo_3,modelo_4,modelo_5,modelo_6, modelo_7)
+#save(modelos_desligado,file = "modelos_desligado.RData")
 
-modelo_6 <- plm(contratado ~ Servidor + Confianca  + poder + filiado + mudanca_poder*poder, 
-                effect = "twoways", 
-                data = servidores_regressao, index = c("id_servidor","ano"))
-
-modelos[[6]] <- modelo_6
-
-save(modelo_6,file = "modelos_pt_2.RData")
-rm(modelo_6)
-
-save(modelos,file = "modelos.RData")
 
 # copiar e colar output no console no latex pra tabela sair direito
 # texreg direto e stargazer tao bugados no markdown, por isso copiar e colar
 
 library(texreg)
 
-texreg(list(modelo_1,modelo_2,modelo_3))
+texreg(modelos_desligado)
 
-texreg(modelos,custom.header = list("Dismissals" = 1:3, "Hirings" = 4:6),
-       custom.coef.map = list("lag(Servidor, 1)"="Lag(Career)","lag(Confianca, 1)" ="Lag(Appointed)",
-                              "lag(Outros,1)"="Lag(Other)","lag(duracao_mes, 1)" ="Lag(Duration)",
-                              "poder" ="Power","filiado" ="Affiliation", 
-                              "mudanca_poder:lag(poder,1):lag(Servidor,1)" = "Lag(Career*Power)*GC",
-                              "mudanca_poder:lag(poder,1):lag(Confianca,1)" = "Lag(Appointed*Power)*GC",
-                              "Servidor" ="Career","Confianca" = "Appointed"),
-       custom.gof.rows = list("Individual FE" = c("No","Yes", "Yes", "No", "Yes", "Yes"),
-                              "Time FE" = c("No", "No", "Yes", "No", "No", "Yes")),
-       digits = 3, caption = "Variation of Public Job Type and Affiliation on Dismissals and Hirings",
+texreg(modelos_desligado,custom.header = list("Dismissals" = 1:7),
+       custom.coef.map = list("poder" ="Power","filiado" ="Affiliation", "lag(duracao_mes, 1)" ="Lag(Duration)",
+                              "lag(desempregado)" = "Lag(Out of Gov)",
+                              "lag(Servidor)"="Lag(Career)","lag(Confianca)" ="Lag(Appointed)",
+                              "poder:lag(Servidor)" = "Lag(Career)*Power",
+                              "poder:lag(Confianca)" = "Lag(Appointed)*Power",
+                              "mudanca_poder" = "GC","mudanca_poder:lag(poder)" = "GC*Lag(Power)"),
+       custom.gof.rows = list("Individual FE" = c("No","Yes", "Yes", "Yes", "Yes", "Yes", "Yes"),
+                              "Time FE" = c("No", "No", "No", "No", "No", "Yes", "No")),
+       digits = 3, caption = "Affiliation and Dismissals Correlation",
        caption.above = T, label = "reg", booktabs = T,longtable = T,
-       custom.model.names	= c("(1)","(2)", "(3)", "(4)", "(5)", "(6)"),
+       custom.model.names	= c("(1)","(2)", "(3)", "(4)", "(5)", "(6)", "(7)"),
+       fontsize = "small")
+
+rm(modelos_desligado)
+
+
+# para contratacoes
+
+modelo_1 <- plm(contratado ~ poder + filiado,
+                data = servidores_regressao, index = c("id_servidor","ano"),
+                model = "pooling")
+modelo_2 <- plm(contratado ~ poder + filiado,
+                data = servidores_regressao, index = c("id_servidor","ano"),
+                model = "within")
+modelo_3 <- plm(contratado ~ poder + filiado + lag(empregado),
+                model = "within",
+                data = servidores_regressao, index = c("id_servidor","ano"))
+
+modelo_4 <- plm(contratado ~ poder + filiado + lag(empregado) + Servidor + Confianca,
+                model = "within",
+                data = servidores_regressao, index = c("id_servidor","ano"))
+modelo_5 <- plm(contratado ~ poder + filiado + lag(empregado) + Servidor + Confianca + Servidor*poder + Confianca*poder,
+                model = "within",
+                data= servidores_regressao, index = c("id_servidor","ano"))
+
+modelo_6 <- plm(contratado ~ poder + filiado + lag(empregado) + Servidor + Confianca + Servidor*poder + Confianca*poder,
+                effect = "twoways",
+                data= servidores_regressao, index = c("id_servidor","ano"))
+modelo_7 <- plm(contratado ~ poder + filiado + lag(empregado) + Servidor + Confianca + Servidor*poder + Confianca*poder + mudanca_poder + mudanca_poder*lag(poder),
+                model = "within",
+                data= servidores_regressao, index = c("id_servidor","ano"))
+
+modelos_contratado <- list()
+
+for(i in 1:7){
+  modelos_contratado[[i]] <- get(paste0("modelo_",i))
+}
+
+rm(modelo_1,modelo_2,modelo_3,modelo_4,modelo_5,modelo_6, modelo_7)
+#save(modelos_desligado,file = "modelos_contratado.RData")
+
+
+# copiar e colar output no console no latex pra tabela sair direito
+# texreg direto e stargazer tao bugados no markdown, por isso copiar e colar
+
+library(texreg)
+
+texreg(modelos_contratado)
+
+texreg(modelos_contratado,custom.header = list("Hirings" = 1:7),
+       custom.coef.map = list("poder" ="Power","filiado" ="Affiliation",
+                              "lag(empregado)" = "Lag(In the Gov)",
+                              "Servidor"="Career","Confianca" ="Appointed",
+                              "poder:Servidor" = "Career*Power",
+                              "poder:Confianca" = "Appointed*Power",
+                              "mudanca_poder" = "GC","mudanca_poder:lag(poder)" = "GC*Lag(Power)"),
+       custom.gof.rows = list("Individual FE" = c("No","Yes", "Yes", "Yes", "Yes", "Yes", "Yes"),
+                              "Time FE" = c("No", "No", "No", "No", "No", "Yes", "No")),
+       digits = 3, caption = "Affiliation and Hirings Correlation",
+       caption.above = T, label = "reg", booktabs = T,longtable = T,
+       custom.model.names	= c("(1)","(2)", "(3)", "(4)", "(5)", "(6)", "(7)"),
        fontsize = "small")
 
