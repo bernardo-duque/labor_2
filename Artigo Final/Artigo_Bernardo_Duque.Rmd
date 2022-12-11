@@ -1,5 +1,5 @@
 ---
-title: "**Political Affiliation and Federal Government Hirings In Brazil**"
+title: "**Political Affiliation and Federal Government Personnel In Brazil**"
 author: | 
   | Bernardo Duque
   | Paper for Labor II
@@ -31,6 +31,8 @@ header-includes:
  \usepackage{longtable}
  \DeclareUnicodeCharacter{2265}{\geq}
  \usepackage{enumitem} 
+ \usepackage{bbold}
+ \usepackage{mathtools}
 bibliography: export.bib
 link-citations: true
 nocite: '@*'
@@ -539,7 +541,22 @@ FALAR DO APENDICE
 
 ## Job Type, Affiliation, Dismissals and Hirings
 
+In this subsection, I run some regressions in order to clarify to some extent the correlation between political affiliation and personnel composition in the federal government. As my database encompass only individuals that at some point in the period of analysis have joined the public sector, my sample will be biased by construction. This may be more of a problem in terms of hirings, while in relation to dismissals the bias probably will be more attenuated. Equation (2) provides the model for dismissals:
 
+\begin{align*}
+            Dismissed_{i,t}  = \alpha_i + \textcolor{blue}{\beta}_1Pwr_{i,t} & +  \textcolor{blue}{\beta_2}Affl_{i,t} + \beta_3Dur_{i,t-1} +\beta_4Out + \textbf{Type'}_{i,t-1}\gamma + \textbf{Type'}_{i,t-1}\textbf{Pwr}_{i,t}\lambda \\
+            & + \textcolor{blue}{\theta}_1GC + \textcolor{blue}{\theta}_2GC*Pwr_{i,t-1} + \epsilon_{i,t} \ \ (2)\\
+\end{align*}
+
+Where $Dismissed_{i,t}$ is a dummy taking the value of one if individual $i$ has been exonerated/fired or left the public sector^[The dummy will only take the value of one if the person left the public sector, not if it had a job as a career worker and another as appointed worker and lost one of these jobs.]; $Pwr_{i,t}$ is a dummy equal to one if the individual is affiliated to the political party in power in period $t$; $Affl_{i,t}$ is also a dummy but equal to one if the individual is affiliated to any political party in power or not.
+
+\begin{align*}
+            Hired{i,t} = \alpha_i + \textcolor{blue}{\beta}_1Pwr_{i,t} & + \textcolor{blue}{\beta_2}Affl_{i,t} + \beta_3In\_Gov + \textbf{Type'}_{i,t}\gamma + \textbf{Type'}_{i,t}\textbf{Pwr}_{i,t}\lambda \\
+            & + \textcolor{blue}{\theta}_1GC + \textcolor{blue}{\theta}_2GC*Pwr_{i,t-1} + \epsilon_{i,t} \ \ (3)\\
+        \end{align*}
+        
+
+\begin{spacing}{1.0}
 \begin{center}
 \begin{small}
 \begin{longtable}{l c c c c c c c}
@@ -591,11 +608,13 @@ Num. obs.            & $6735092$      & $6735092$      & $6735092$      & $67350
 \end{longtable}
 \end{small}
 \end{center}
+\end{spacing}
 
 
 
 
 
+\begin{spacing}{1.0}
 \begin{center}
 \begin{small}
 \begin{longtable}{l c c c c c c c}
@@ -645,8 +664,9 @@ Num. obs.       & $7697248$      & $7697248$     & $6735092$      & $6735092$   
 \end{longtable}
 \end{small}
 \end{center}
+\end{spacing}
 
-## Limitations and Possible Identification Strategy
+# Limitations and Possible Identification Strategy
 
 AUSENCIA DE INFERENCIA CAUSAL
 
