@@ -4,7 +4,7 @@ author: |
   | Bernardo Duque
   | Paper for Labor II
   | PUC-Rio
-date: "December 09, 2022"
+date: "December 12, 2022"
 output:
   pdf_document:
     toc: F
@@ -33,6 +33,8 @@ header-includes:
  \usepackage{enumitem} 
  \usepackage{bbold}
  \usepackage{mathtools}
+ \usepackage{adjustbox}
+ \usepackage{graphicx}
 bibliography: export.bib
 link-citations: true
 nocite: '@*'
@@ -65,30 +67,6 @@ load(file = "base_rotatividade_cat.RData")
 load(file = "base_rotatividade_poder_cat.RData")
 ```
 
-# Feedbacks Ursula
-
-* Indicar se os papers que existem pro brasil usam cargos comissionados ou com estabilidade. Se so usarem comissionados, justificar o motivo de ver com estabilidade (ela pode nao ocorrer na pratica) -- tambem devo olhar para realocacao dentro do setor publico
-
-* Ideia de aferir causalidade eh usar um match com pessoas parecidas do partido perdedor
-
-* Olhar para promocoes (classe cargo)
-
-* Nao to medindo demissao, e sim desligamento. Uma forma de ver se eh demissao msm seria cruzar com a RAIS e ver quantas pessoas tao pro mercado privado imediatamente depois
-
-* Transition probability matrix?
-
-* Grafico com partido dominante por estado
-
-* Limitacoes:
-
-  * Join por nome (sem cpf)
-  
-  * Excluindo quem tem mais de um partido da analise
-  
-  * So olhando para o partido que esta no poder (sem contar coligacao e ate msm vice) (obs 2020 considerando PSL)
-  
-* Falar sobre filiacao em contexto e incluir a 1a tabela e 1o grafico
-
 # Introduction
 
 Governments play a huge role in the development of a country. However, although government quality has always been emphasized by economists, little evidence has been produced in relation to how its personnel affects its performance [@finan17]. More specifically, little attention has been given to how political affiliation may affect personnel composition, i.e. if political discrimination^[Although the two concepts are not exactly the same, here I will use interchangeably political discrimination and patronage, since in this context patronage is a form of political discrimination.] plays a role in selecting public sector workers.  
@@ -96,18 +74,22 @@ Governments play a huge role in the development of a country. However, although 
 Some channels which bureaucracy affects development have already been documented^[ See @besley21 for a review of the ties between bureaucracy and development.]. For instance, the career design matters. @xu19 found that career incentives to reach higher positions can have substantial impacts on the performance of civil servants. In times of crisis, representation is also important. In the context of the 1918 pandemics in India, @xu21 found that towns led by Indian bureaucrats had fewer deaths than the ones where British headed. Similarly, bureaucrats assigned to home states in India tend to be perceived as less effective in their performance because of higher corruption [@xu20].
 
 In relation to patronage in the public sector, evidence is more scarce worldwide, although in Brazil a few papers have been produced.
-In relation to worldwide evidence, in the context of the US, @xu22 find that ideologically misalignment between bureaucrats and political leaders leads to "morale costs" and consequently less productivity in the public sector. 
+In relation to worldwide evidence, in the context of the US, @xu22 find that ideological misalignment between bureaucrats and political leaders leads to "morale costs" and consequently less productivity in the public sector. 
 
-In terms of Brazil, @colo20 document the existence of patronage within the public sector in the municipal level and that it leads to selection of less competent individuals.^[ This is aligned to the finds made by @neto22, that document the existence of political discrimination also in private firms in Brazil. The authors find that this discrimination leads to copartisans workers being paid more and getting promoted more often, even when underqualified, and that this may lead firms to grow less.] Their findings are partially consistent with @brollo17, that found that mayors used their discretion power to employ members of their party, although workers quality actually rose in their study. @barbosa19 also find similar results for the rise in employment of affiliated workers, but the magnitude is less severe. 
+In terms of Brazil, @colo20 document the existence of patronage within the public sector in the municipal level and that it leads to selection of less competent individuals.^[ This is aligned to the finds made by @neto22, that document the existence of political discrimination also in private firms in Brazil. The authors find that this discrimination leads to copartisans workers being paid more and getting promoted more often, even when underqualified, and that this may lead firms to grow less.] Their findings are partially consistent with @brollo17, that found that mayors used their discretion power to employ members of their party, although workers quality actually rose in their study. @barbosa19 also find similar results for the rise in employment of affiliated workers, but the magnitude is less severe.
 
-However, none of them have provided evidence on the federal level, which arguably is more likely to have a more profound impact on development than the municipal level -- used by all of them --, both because of the size of the federal bureaucracy and because of its more broadly attributions. Hence, in this study I will try to address this lack of evidence and contribute to this literature.
+However, none of them have provided evidence on the federal level, which arguably is more likely to have a more profound impact on development than the municipal level -- used by all of them^[The three papers empirical strategy are very similar. They use data from RAIS and a Regression Discontinuity Design at the municipal level. @neto22 and @brollo17 investigate the question for both appointed and workers that went through public examinations, but @barbosa19 only look to the last type of worker.] --, both because of the federal government role on providing the guidelines for all other levels and because of its more broadly attributions. Hence, in this study I try to address this lack of evidence and contribute to this literature.
 
-Because of the amount of data I will have to handle within a small period of time, this research project will have a descriptive approach. I will try to provide some information and insights on the following questions. 
-Has increased polarization led to political discrimination within the federal public sector? Did it lead to increased dismissals of employees affiliated to the opposing party^[I will in fact consider political coalitions in my analysis instead of party-by-party, although I can also test for heterogeneity in terms of being affiliated to the party and the coalition.] despite their stability? What is the magnitude of job turnover when there is a government change? Are appointed workers or outsourcing firms hired because of their qualification or solely because of their political affiliation or of their owners? Does this lead to inefficiency in the public sector? 
+Because of the amount of data I had to handle within a small period of time, this research project have a descriptive approach. I provide a descriptive analysis on the role of political affiliation within the federal executive branch of Brazilian government^[Only civilian workers] and try to answer the following question. Does political discrimination play a role in selecting public sector workers? 
 
-This study aims to contribute to two branches of the literature. First, to the growing literature of the role of politics in the the public sector labor market. Second, more generally to the broad literature of discrimination in the labor market and more specifically to discrimination in the public sector labor market.
+To approach this question I use data on federal workers from 2013 to 2020 -- from Brazil's Comptroller General -- and information on all political affiliations in Brazil since 1990 -- Brazil’s electoral high court. 
+I find that mean affiliation rate for public workers is higher than the relative rate for all labor force (10.8% x 8.6%, respectively); net hirings for affiliated workers have decreased more rapidly than the rest of public workers; and turnover is higher given affiliation and appointed workers have higher turnover than workers that went through public examinations (henceforth referenced to as career workers).
 
-The following section will provide some guidelines to describe the context of the study. Next, I will discuss more about the data that will be used, and the subsequent section will briefly discuss the empirical strategy. The last section will conclude presenting a roadmap for this project.
+Furthermore, affiliation to the ruling political party is associated to a reduction in the probability of being fired/quitting by 2.1 p.p. for career workers and 2.4 p.p. for appointed workers (46% and 52% baseline increase, respectively). Similar estimates for the probability of being hired are -1.9 p.p. (32% decrease) and 6.5 p.p. (impressive 110% increase), respectively.
+
+This study aims to contribute to two branches of the literature. First, to the growing literature of the role of politics in the the public sector labor market. Second, more generally to the broad literature of discrimination in the labor market and more specifically to discrimination in the public sector labor market. And finally but no least, to the literature relative to the intersection between bureaucracy and development. 
+
+The following section describes the institutional context of the study. Next, the data sources are presented, and the subsequent section shows the results of the descriptive analysis. Then, the limitations of the study are discussed and the last section concludes.
 
 # Institutional Context
 
@@ -119,7 +101,7 @@ In this section I briefly describe some dynamics and facts related to the public
 
 The public sector in Brazil is divided in three levels -- Federal, State, and Municipal -- and three branches -- Executive, Legislative and Judiciary. Each state has a number of municipalities, and the federal level encompass all 26 states (plus the federal district). Each level has their own three branches. Workers can also be civilians or military. In this study I only focus on civilians workers^[Because of the time restriction.], although military workers have gained a more prominent role in the executive federal level. 
 
-There are three types of ties that a worker can have with the public sector: "career" contract, "appointed" contract or "other". The first type corresponds to all public workers that have been admitted to the public sector through a public examination; while the second type are workers in posts of trust, that is, they are nominated to their posts. The last type refers to a minority that includes contract-less workers, temporary workers, interns and so forth. Workers can be of two type simultaneously if one post has no interference on the other (e.g. an individual can have a career job and get nominated to an appointed one, without losing their career post).
+There are three types of ties that a worker can have with the public sector: "career" contract, "appointed" contract or "other". The first type corresponds to all public workers that have been admitted to the public sector through a public examination; while the second type are workers in posts of trust, that is, they are nominated to their posts. The last type refers to a minority that includes contract-less workers, temporary workers, interns and so forth. Workers can be of two types simultaneously if one post has no interference on the other (e.g. an individual can have a career job and get nominated to an appointed one, without losing their career post).
 
 As can be seen in Figures \ref{fig:publwork} and \ref{fig:comppubl}, the great majority of public workers in the federal executive level are career ones. The number of workers are relatively stable both in absolute and proportional terms; the mean for career workers is `r t2 %>% ungroup %>% filter(num=="Career") %>% summarise(mean = mean(porc)) %>% round(2)`%, while for appointed workers is `r t2 %>% ungroup %>% filter(num=="Appointed") %>% summarise(mean = mean(porc)) %>% round(2)`%.
 
@@ -171,7 +153,7 @@ Brazilians vote every 2 years, intercalating between federal and state elections
 
 Recently, the presidential post has been subject to a lot of disputes, including an impeachment and the election of an extreme right-wing politician to power. It has generated a lot of tensions and polarization has contaminated the whole society, with cases of political violence increasing, resulting even in murder^[E.g. https://congressoemfoco.uol.com.br/area/pais/homem-e-morto-por-bolsonarista-em-aniversario-com-tematica-do-pt/]. 
 
-Figure \ref{fig:3} presents a timeline of the main events related to the presidential post in Brazil in the period of analysis. It starts with the reelection of the Workers Party president, passing through the impeachment process that increases polarization and ends with the election of the right-wing extremist. It is important to note that in this period there has been two changes of presidents and two elections. However, for the sake of the analysis I will treat the reelection as a government change, since because of the risk of impeachment the former president drastically changed her government model in order to remain in power.
+Figure 3 presents a timeline of the main events related to the presidential post in Brazil in the period of analysis. It starts with the reelection of the Workers Party president, passing through the impeachment process that increased polarization and ends with the election of a right-wing extremist. It is important to note that in this period there has been two changes of presidents and two elections. However, for the sake of the analysis I will treat the reelection as a government change, since because of the risk of impeachment the former president drastically changed her government model in order to remain in power.
 
 ![Presidential Timeline 2013-2020](/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Artigo Final/timeline.jpg){#id .class width=70% height=70%}
 
@@ -201,7 +183,7 @@ t1 %>%
   kable_styling(latex_options = c("hold_position"), font_size = 12)
 ```
 
-Figure \ref{fig:aff} shows the evolution of affiliates per year, considering only individuals that never changed parties. The number of affiliates has increased slowly, closely following the population growth. In terms of political parties, considering all individuals affiliated to a party in the period -- i.e., including possible changes^[The order does not change when considering only individuals that never changed parties, but PT comes closer to MDB.] --, Figure \ref{fig:polparty} shows that the party with most affiliates is MDB, a party known for its lack of ideological adherence. Next is the Workers Party, that has been in power for 14 of the last 20 years and it is known for having a lot of loyal supporters as well as a lot of opposing forces.
+Figure \ref{fig:aff} shows the evolution of affiliates per year, considering only individuals that never changed parties. The number of affiliates has increased slowly, closely following the population growth. In terms of political parties, considering all individuals affiliated to a party in the period -- i.e., including possible changes^[The order does not change when considering only individuals that never changed parties, but PT comes closer to MDB.] --, Figure \ref{fig:polpart} shows that the party with most affiliates is MDB, a party known for its lack of ideological adherence. Next is the Workers Party, that has been in power for 14 of the last 20 years and it is known for having a lot of loyal supporters as well as a lot of opposing forces.
 
 ```{r, fig.cap="\\label{fig:aff}Number of Affiliates"}
 ggplot(base_ano,aes(x=ano,y=num_filiados)) + 
@@ -254,29 +236,30 @@ I first gather information on all affiliations that are active between 2013-2020
 
 The data base on federal public sector is called *Registros de Servidores Públicos do Executivo Federal*, which is maintained by CGU. On the first day of every month, CGU updates the data base including information on every federal public sector worker on the executive branch. It includes workers from autarchies, but not from state-owned firms, outsourcing firms, military or retired workers. 
 
-Data is available from 2013 to 2020, which is the reason why this is the period of time that I restrict my analysis to. It contains information on the type of spell -- if the employee is a civil servant^[ Hired by means of public examinations.] or was appointed --, the public agency the employee is assigned to, the public agency the employee is actually working on^[ The worker can be reallocated in some cases, altough it is out of the scope of this study.], working hours per week, the date in which they have joined the public sector and the current public agency, their post, the state in which they are serving, name and CPF. 
+Data is available from 2013 to 2020, which is the reason why this is the period of time that I restrict my analysis to. It contains information on the type of spell -- if the employee is a career or appointed worker --, the public agency the employee is assigned to, the public agency the employee is actually working on^[ The worker can be reallocated in some cases, although it is out of the scope of this study.], working hours per week, the date in which they have joined the public sector and the current public agency, their post, the state in which they are serving, name and CPF. 
 
 I gather information for every year on October 1st to reduce the size of the database to a computationally manageable one (6,177,039 observations)^[This inevitably leads to some information being lost, because individuals that started working from November to September and ended their spell in September are not included in the data. However, due to the nature of public sector employment, I argue that this is not a relevant amount of people.].
 7.47% of individuals in the data have no information on starting date, but 3.7% first appear after 2013, so I allocate this first appearance as their starting date. The remaining 3.7% were dropped.
-I construct variables such as duration of employment and dummies for hirings and dismissals. Although I call the variable dismissal, it is important to stress that it is not exactly a measure of dismissals, since I cannot distinguish if the worker was exonerated/fired or left by their own will.
+I construct variables such as duration of employment and dummies for hirings and dismissals. Although I call the variable dismissal, it is important to stress that it is not exactly a measure of dismissals, since I cannot distinguish if the worker was exonerated/fired, left by their own will or even retired^[This case is not of particular worry since I assume the rate of retirement is constant over the period of analysis.].
 
 ## Merge
 
 Ideally, I would like to merge the two data sets perfectly using information on some national identifier such as CPF or voter registry. However, each base has information on only one of them, besides the names of the individuals.
 
-As such, my merging variable is the worker's name. I dropped individuals with repeated name from both data sets, in order to refine this process. Individuals that were affiliated to more than one party in the period were also dropped^[300,864 observations, i.e.,37,608 individuals x 8 years].Finally, get a resulting panel of 7,697,248 observations (962,156 individuals x 8 years). Clearly this is not a perfect match and it is vulnerable to mismatches, but it was the best option given the time restriction of this study. 
+As such, my merging variable is the worker's name. I dropped individuals with repeated name from both data sets, in order to refine this process. Individuals that were affiliated to more than one party in the period were also dropped^[300,864 observations, i.e., 37,608 individuals x 8 years.].Finally, get a resulting panel of 7,697,248 observations (962,156 individuals x 8 years). Clearly this is not a perfect match and it is vulnerable to mismatches, but it was the best option given the time restriction of this study. 
 
 
 # Descriptive Analysis
 
+In this section, I first provide some descriptive information by merging the two data sets.
+Next, I look to hirings and dismissals of public workers, and how this differs for affiliated workers and by type of contract.
+Then, I present some estimations on job turnover and conclude the section showing some regressions results. Overall, the evidence provided is in line with a role of political affiliation on government personnel composition.
+
 ## Hirings and Dismissals
 
-As I will be working with a lot of different datasets within a limited period of time, this research project will have a descriptive approach, i.e. I will not answer any of the research questions causally. For this reason, it is not yet possible to fully define the statistics I will provide, since ideas might (dis)appear during the exploration of the data. However, henceforth I will discuss some possibilities.
+Before focusing on hirings and dismissals *per se*, it is interesting to compare affiliation rates between the general population and public workers. Figure \ref{fig:workersaff} shows that total affiliations have been rather constant over time, with a mean of `r filiados_ano %>% summarise(mean = mean(filiado)/1000) %>% round(1)`k workers in the period, which is equivalent to a share of 10.82%, as can been seen in Table 2. Typically, public workers seem to have a higher affiliation rate than the general population, although -- contrary to what one might expect -- career and appointed workers seem to have the same rate of affiliation. 
 
-As CPFs are not entirely provided in the data sets^[ The first three and last two digits are omitted.], but I have employees full names, I can merge the databases to get the information I need. I will provide some summary statistics both on political affiliations in Brazil and on the public sector labor market. Next, I will provide some other descriptive statistics by merging all sets of information. For instance, I will be able to indicate how different are affiliations rates between public sector employees and the general population; the number of hirings and dismissals of government workers of all type before and after electoral cycles; and run an heterogeneity analysis in terms of managerial or non-managerial posts. 
-
-
-```{r, fig.cap="\\label{fig:turnover}Number of Public Workers Affiliated to a Political Party"}
+```{r, fig.cap="\\label{fig:workersaff}Number of Public Workers Affiliated to a Political Party"}
 filiados_ano %>% 
   ggplot(aes(x=ano,y=filiado)) + 
   geom_bar(alpha = 0.5, position = position_dodge(0.8),
@@ -314,10 +297,12 @@ filiados_tipo %>%
   as.data.frame() %>%
   stargazer(title = "Summary Statistics for Political Affiliation in the Public Sector",
             omit.summary.stat = c("n"),
-            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other", "\\% All Labor Force"),
+            covariate.labels = c("\\% Total", "\\% Career", "\\% Appointed", "\\% Other", "\\% All Labor Force", label = "summary"),
             header = F, digits = 2)
 ```
 
+In terms of hirings and dismissals, Figure \ref{fig:nethir} first presents the metrics for all public workers. It is clear that net hirings -- the difference between hirings and dismissals -- has been falling over time, which means that the stock of public workers has been increasing with a smaller rate until it actually starts falling in 2019. Overall, this is driven by an increase in dismissals, not a decrease in hirings.
+However, since only civilians workers are being considered in the analysis, it is possible that this is not the real picture for all workers, since it is a known fact that military have increased exponentially their participation in this government area. Hence, it may be the case that in fact there was a substitution of civilians for military workers.^[See section \ref{limitations} for a discussion on this limitation.]
 
 
 ```{r, fig.cap="\\label{fig:nethir}Net Hirings of Public Workers"}
@@ -346,6 +331,10 @@ contratados %>%
     #           alpha = 0.2, size = 4)
 ```
 
+Figure \ref{fig:compnet} presents the decomposition of net hirings per category. It seems that net hirings were already negative for career and appointed workers since 2017. Figures \ref{fig:compnetapp} and \ref{fig:compnetapp2} in the Appendix presents the hirings and dismissals for career and appointed workers to show that this negative net hiring is not driven by a lack of hirings.
+
+In relation to affiliated workers, Figure \ref{fig:compnet2} presents a similar analysis to Figure \ref{fig:compnet}, but changing other workers for total net hirings. It is clear that the process identified in the previous graph occurs earlier and sharper for affiliated workers -- both career and appointed. This suggests that affiliated workers may be the first in line in terms of getting laid off when needed, which implies that their turnover may be higher than the rest of workers. This will be approached in the next subsection.^[Figures \ref{fig:careernet2} and \ref{fig:appnet2} in the Appendix show that again the negative net hirings are not driven by a lack of hirings.]
+
 
 ```{r, fig.cap="\\label{fig:compnet}Composition of Net Hirings per Category"}
 contratados_tipo %>%
@@ -373,9 +362,6 @@ contratados_tipo %>%
   #geom_vline(xintercept=c(2016,2020), linetype="solid", color = "grey",
   #           alpha = 0.2, size = 4)
 ```
-
-FALAR QUE A DECOMPOSICAO ESTA NO APENDICE
-
 
 
 ```{r, fig.cap="\\label{fig:compnet2}Composition of Net Hirings per Category If Affiliated"}
@@ -408,17 +394,19 @@ contratados_filiados %>%
 
 ## Turnover
 
-In terms of job turnover, I will measure whether it has changed between elections by a hazard function. It indicates the probability that the employment spell will be terminated next month, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I will use an approach adapted from @pb99, where the hazard function for each year will be calculated by:
+@gonzaga discuss the effects of high turnover on the economy, although focusing on the private sector. The authors explain that a certain amount of turnover is necessary for optimizing allocation, leading to better matches. However, a high degree hinders human capital accumulation specific to the job, which reduces specific productivity and affects efficiency.
+I proxy job turnover by a hazard function. It indicates the probability that the employment spell will be terminated next period, conditional on its current duration in months $d$.^[The higher the hazard function, the higher the turnover.] I use an approach adapted from @pb99, where the hazard function for each year is calculated by:
 
 \begin{equation}
-  h_t(d) = \frac{T_t(d)}{N_t(d)}
+  h_t(d) = \frac{T_{t+1}(d)}{N_t(d)}
 \end{equation}
 
-Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_t(d)$ is the number of public sector employments terminated at time $t$ given duration $d$; and $N_t(d)$ is the total number of active employments in the public sector. I will consider $d \in D$, such that $D= \{ 12,24,48 \}$.
+Where $h_t(d)$ is the hazard function given duration $d$ for year $t$; $T_{t+1}(d)$ is the number of public sector employments terminated at time $t+1$ given duration $d$ at $t$; and $N_t(d)$ is the total number of active employments in the public sector given duration $d$. I consider $d \in D$, such that $D= \{ 12,24,48 \}$. This estimator is useful for measuring how duration of
+employment is changing over time. 
 
-If there is enough time, I will also be able to provide some evidence on whether owners of outsourcing firms affiliated to the leading political party are benefited by the ruling of their party.
+Figure \ref{fig:turnover} plots the hazard functions for all public workers. As expected, turnover given duration of employment is higher the lower the duration. However, no clear pattern emerges. The probability of dismissal has increased over time and decreased after the government changes in 2015 and 2019 but not in 2016 given duration of 12 months. 
 
-DISCUTIR PQ ROTATIVIDADE EH IMPORTANTE
+In terms of the decomposition of career and appointed workers, Figures \ref{fig:turnovercar} and \ref{fig:turnoverapp} presents the same graph for these two categories. The same pattern appear for career workers, but for appointed individuals the increase has been constant given all duration. In addition, the chances of getting dismissed are much higher for appointed workers than for their career counterparts, which implies that the stability mechanism is probably working properly. 
 
 ```{r, fig.cap="\\label{fig:turnover}Turnover of Public Workers"}
 ggplot(rotatividade,aes(x=ano,y=value)) + 
@@ -443,7 +431,7 @@ ggplot(rotatividade,aes(x=ano,y=value)) +
              alpha = 0.5, size = 4)
 ```
 
-```{r, fig.cap="\\label{fig:turnover}Turnover of Career Workers"}
+```{r, fig.cap="\\label{fig:turnovercar}Turnover of Career Workers"}
 ggplot(rotatividade_serv,aes(x=ano,y=value)) + 
   geom_line(aes(group = variable, linetype = variable, color = variable),
             size = 0.8) +
@@ -466,7 +454,7 @@ ggplot(rotatividade_serv,aes(x=ano,y=value)) +
              alpha = 0.5, size = 4)
 ```
 
-```{r, fig.cap="\\label{fig:turnover}Turnover of Appointed Workers"}
+```{r, fig.cap="\\label{fig:turnoverapp}Turnover of Appointed Workers"}
 ggplot(rotatividade_conf,aes(x=ano,y=value)) + 
   geom_line(aes(group = variable, linetype = variable, color = variable),
             size = 0.8) +
@@ -489,6 +477,7 @@ ggplot(rotatividade_conf,aes(x=ano,y=value)) +
              alpha = 0.5, size = 4)
 ```
 
+Next, turning to affiliated public workers and individuals affiliated to the ruling party -- Figures \ref{fig:turnovermerg} and \ref{fig:turnoverpwr}, respectively --, the analysis becomes a bit harder because the sample is getting smaller, which leads to some noise. For this reason, I leave to the reader to draw their own conclusions after making the following comment. For both figures, the levels of the probabilities are higher given all duration in relation to all public workers (Figure \ref{fig:turnover}). This is what we would expect if political affiliation played a role in the personnel composition, although again there is no clear pattern after elections take place. Figures \ref{fig:turnoverpwrapp} and \ref{fig:turnoverpwrapp2} in the Appendix shows the decomposition for career and appointed workers affiliated to the ruling political party.
 
 ```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Affiliated Public Workers"}
 ggplot(rotatividade_merg,aes(x=ano,y=value)) + 
@@ -514,7 +503,7 @@ ggplot(rotatividade_merg,aes(x=ano,y=value)) +
 ```
 
 
-```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Public Workers Affiliated to Political Party in Power"}
+```{r, fig.cap="\\label{fig:turnoverpwr}Turnover of Public Workers Affiliated to Political Party in Power"}
 ggplot(rotatividade_poder,aes(x=ano,y=value)) + 
   geom_line(aes(group = variable, linetype = variable, color = variable),
             size = 0.8) +
@@ -537,28 +526,32 @@ ggplot(rotatividade_poder,aes(x=ano,y=value)) +
              alpha = 0.5, size = 4)
 ```
 
-FALAR DO APENDICE
-
 ## Job Type, Affiliation, Dismissals and Hirings
 
-In this subsection, I run some regressions in order to clarify to some extent the correlation between political affiliation and personnel composition in the federal government. As my database encompass only individuals that at some point in the period of analysis have joined the public sector, my sample will be biased by construction. This may be more of a problem in terms of hirings, while in relation to dismissals the bias probably will be more attenuated. Equation (2) provides the model for dismissals:
+In this subsection, I run some regressions in order to clarify -- to some extent -- the correlation between political affiliation and personnel composition in the federal government. As my database encompass only individuals that at some point in the period of analysis have joined the public sector, my sample will be biased by construction. This may be more of a problem in terms of hirings, while in relation to dismissals the bias probably will be more attenuated. Equation (2) provides the model for dismissals:
 
 \begin{align*}
-            Dismissed_{i,t}  = \alpha_i + \textcolor{blue}{\beta}_1Pwr_{i,t} & +  \textcolor{blue}{\beta_2}Affl_{i,t} + \beta_3Dur_{i,t-1} +\beta_4Out + \textbf{Type'}_{i,t-1}\gamma + \textbf{Type'}_{i,t-1}\textbf{Pwr}_{i,t}\lambda \\
+            Dismissed_{i,t}  = \alpha_i + \textcolor{blue}{\beta}_1Pwr_{i,t} & +  \textcolor{blue}{\beta_2}Aff_{i,t} + \beta_3Dur_{i,t-1} +\beta_4Out_{i,t-1} + \textbf{T'}_{i,t-1}\gamma + \textbf{T'}_{i,t-1}\textbf{Pwr}_{i,t}\lambda \\
             & + \textcolor{blue}{\theta}_1GC + \textcolor{blue}{\theta}_2GC*Pwr_{i,t-1} + \epsilon_{i,t} \ \ (2)\\
 \end{align*}
 
-Where $Dismissed_{i,t}$ is a dummy taking the value of one if individual $i$ has been exonerated/fired or left the public sector^[The dummy will only take the value of one if the person left the public sector, not if it had a job as a career worker and another as appointed worker and lost one of these jobs.]; $Pwr_{i,t}$ is a dummy equal to one if the individual is affiliated to the political party in power in period $t$; $Affl_{i,t}$ is also a dummy but equal to one if the individual is affiliated to any political party in power or not.
+Where $Dismissed_{i,t}$ is a dummy taking the value of one if individual $i$ has been exonerated/fired or left the public sector^[The dummy will only take the value of one if the person left the public sector, not if it had a job as a career worker and another as appointed worker and lost one of these jobs.] at time $t$; $Pwr_{i,t}$ is a dummy equal to one if the individual is affiliated to the political party in power in period $t$; $Aff_{i,t}$ is also a dummy but equal to one if the individual is affiliated to any political party (in power or not). $Dur_{i,t-1}$ is a discrete variable indicating the number of months that the worker had been working in period $t-1$; $Out_{i,t-1}$ is a dummy indicating if the individual was out of the public sector in the period $t-1$, and $\textbf{T'}_{i,t-1}$ is a categorical variable indicating which type was the job in period $t-1$, career or appointed. Finally, $GC$ indicates if in period $t$ there has been a government change.^[It is important to stress how identification is possible in this model. In the data panel individuals may, for example, already be affiliated and then change parties, may get affiliated in some year $t$, get dismissed or hired in some year $t$ and so on. Besides that, he may be affiliated in all years and his party may have changed from the ruling party to an opposing party.]
 
-\begin{align*}
-            Hired{i,t} = \alpha_i + \textcolor{blue}{\beta}_1Pwr_{i,t} & + \textcolor{blue}{\beta_2}Affl_{i,t} + \beta_3In\_Gov + \textbf{Type'}_{i,t}\gamma + \textbf{Type'}_{i,t}\textbf{Pwr}_{i,t}\lambda \\
-            & + \textcolor{blue}{\theta}_1GC + \textcolor{blue}{\theta}_2GC*Pwr_{i,t-1} + \epsilon_{i,t} \ \ (3)\\
-        \end{align*}
-        
+If political discrimination does in fact play a role in the composition of government personnel, we would expect $\beta_1$ to be negative, that is the probability of being fired when the individual's party is in power is decreased. On the other hand, one would expect $\beta_2$, $\theta_1$ and $\theta_2$ to be positive or zero in the case of $\beta_2$. That is, being affiliated to a party that is not in power should increase or have no effect on the probability of being dismissed.
+
+Again, it is important to stress that I am not really distinguishing between firings/exoneration or just people leaving their jobs. However, in both cases the direction of the coefficient would be the same and we would conclude that political affiliation does matter in selecting government personnel, although not distinguishing between a willing mismatch or political discrimination.
+In terms of $\theta_1$ and $\theta_2$, we would expect that the probability of being dismissed is higher when there is a government change for all workers but especially higher for those who were affiliated to the previous government party. 
+
+Table \ref{reg} presents the estimations. Column (1) does not include any fixed effect, while Columns (2)-(7) include individual fixed effects and Columns (6) include year fixed effects. 
+
+Overall, the coefficients of interest have the signals predicted by a role for political affiliation on personnel composition. There is a misprediction related to $\beta_2$, however there may be a bias driven by parties that are in the same coalition of the party in power, since in this variable I am considering all political parties. Despite that, being affiliated to the ruling party is associated to a reduction of 2.1 p.p. for career workers and 2.4 p.p. for appointed workers. Since the baseline mean of dismissals is 4.6 p.p., the estimates represent an increase of `r round((2.1/4.6)*100)`% and `r round((2.4/4.6)*100)`% respectively, which suggests that political affiliation does matter for personnel composition. 
+
+Also interesting are the estimates for $\theta_1$ and $\theta_2$. They imply that government changes leads to more dismissals in general -- which is consistent to a new arrangement by the new government -- and that an individual that was affiliated to the ruling party has an increased probability of getting dismissed when there is a government change^[This estimate is probably a lower bound since I am considering the reelection of 2014 as a government change. Since the ruling party did not change, this may cause a downward bias to $\theta_2$.]. This is consistent with political discrimination, although it may be due to self-selecting out of the government ruled by the opposition. 
 
 \begin{spacing}{1.0}
 \begin{center}
 \begin{small}
+\setlength\tabcolsep{3pt}
 \begin{longtable}{l c c c c c c c}
 \caption{Affiliation and Dismissals Correlation}
 \label{reg}\\
@@ -610,16 +603,28 @@ Num. obs.            & $6735092$      & $6735092$      & $6735092$      & $67350
 \end{center}
 \end{spacing}
 
+In terms of hirings, Equation (3) presents my favourite model specification:
 
+\begin{align*}
+            Hired{i,t} = \alpha_i + \textcolor{blue}{\beta}_1Pwr_{i,t} & + \textcolor{blue}{\beta_2}Aff_{i,t} + \beta_3In\_Gov_{i,t-1} + \textbf{T'}_{i,t}\gamma + \textbf{T'}_{i,t}\textbf{Pwr}_{i,t}\lambda \\
+            & + \textcolor{blue}{\theta}_1GC + \textcolor{blue}{\theta}_2GC*Pwr_{i,t-1} + \epsilon_{i,t} \ \ (3)\\
+        \end{align*}
+        
+Where $Hired{i,t}$ takes the value of one if individual $i$ was hired in period $t$; $In\_Gov_{i,t-1}$ indicates if the individual was working in the public sector in period $t-1$; and the rest of the variables are equivalent to the described above for equation (2). Based on the hypothesis of political discrimination having a role on hirings, we would expect $\beta_1$ and $\theta_1$ to be positive, $\beta_2$ to be negative or null and $\theta_2$ to be negative -- being affiliated to the former ruling party should decrease the probability of getting hired.
 
+Table \ref{reg_2} presents the results. Again, Column (1) has no fixed effects, Columns (2)-(7) include individual fixed effects and Column (6) also includes year fixed effects. In my favourite specification we can see that again the signals of the coefficients of interest are consistent with the prediction, except $\beta_2$ -- although the same reasoning applied before works here. Being affiliated to the ruling party is associated to an increase in getting hired of 6.5 p.p. for appointed workers. However, surprisingly it is negatively associated in the case of career workers, with a point estimate of -1.9 p.p., which may probably be explained by the fact that public examinations actually are protected against political interventions and there is a selection bias present in this type of job compared to the appointed counterpart. These changes in the probability are equivalent to a decrease of `r round((-1.9/5.89)*100)`% for career and increase of impressive `r round((6.5/5.89)*100)`% for appointed workers, respectively, in relation to the 5.89 p.p. baseline.
 
+Finally, $\theta_1$ again indicates that when there is a presidential change, the government probability of hiring increases, consistent with a recomposition of personnel for the new term. In terms of $\theta_2$ although negative as predicted, it has no statistical significance. This suggests that the effect of the immediate government change may be more strong in terms of dismissals than hirings.
+
+\pagebreak
 
 \begin{spacing}{1.0}
 \begin{center}
 \begin{small}
+\setlength\tabcolsep{5pt}
 \begin{longtable}{l c c c c c c c}
 \caption{Affiliation and Hirings Correlation}
-\label{reg}\\
+\label{reg_2}\\
 \toprule
  & \multicolumn{7}{c}{Hirings} \\
 \cmidrule(lr){2-8}
@@ -666,24 +671,18 @@ Num. obs.       & $7697248$      & $7697248$     & $6735092$      & $6735092$   
 \end{center}
 \end{spacing}
 
-# Limitations and Possible Identification Strategy
+# Limitations
 
-AUSENCIA DE INFERENCIA CAUSAL
+\label{limitations}
 
-MERGE DAS BASES FEITO SO COM NOMES
+First of all, the main limitation of this study is the lack of a causal inference. Every evidence provided has a descriptive character and should not be taken at face value. Similar studies have used a Regression Discontinuity Design but all at the municipal level. This is, however, not possible in this case due to the lack of a clear discontinuity. On the other hand, it is possible to think of a matching approach where the control group would be individuals with similar observable characteristics but affiliated to the runner up party, for example. 
 
-INCLUIR MILITARES E TERCEIRIZADOS NA ANALISE
+However, this causal approach would only be possible if I could identify more individuals and more of their characteristics. This could be done if I used RAIS^[A employer-employee database covering all formal labor supply in Brazil.] instead of the CGU database. In addition, I could follow individuals after they leave the public sector to understand long-term consequences of the migration between public and private sector; distinguish between firings/dismissals, people leaving their jobs or even retirements; and create a measure of quality to estimate the effects of political discrimination on the provision of public services and goods.
+Apparently, there is also a better data set for political affiliations in Brazil that, besides the individual's name, also contains their date of birth, which together with RAIS would allow me a better and more trustful merge. 
 
-DADOS DA RAIS PARA SEGUIR AS PESSOAS DPS 
+Another important limitation of this study is the lack of data on military workers. The database exists but due to the time restriction I could not embed it to the analysis. One could interpret the relationship between the extreme right-wing president and the military as a relationship between a president and his political affiliation because of their historical and in-power ties. This would imply that the analysis here could actually be downward-biased. In addition, it would be interesting to consider the party in power not only as the one in which the president is affiliated to, but the whole coalition in power -- as discussed in the previous section --; and include workers affiliated to more than one party in the period to the analysis. 
 
-OLHAR PARA REALOCACOES
-
-
-
-DISCUTIR MATCH PARA IDENTIFICACAO
-
-
-Finally, if there is enough time, I will try to extend my analysis to the private sector to understand the dynamics of workers that migrate between the private and the public sector, especially those with appointed public jobs. To do this, I will need access to RAIS^[ I would need access to RAIS with name and CPF.], a employer-employee database covering all formal labor supply in Brazil. It includes information on the start and end of contract, the occupation, sector and demographic characteristics of workers.
+Furthermore, the richness of the data could allow me to explore if there are effects of political affiliation on reallocation within the public sector, the role on promotions and career advancements, as well as explore heterogeneity between public agencies. Finally, this could also be complemented by the new available database on earnings of public workers.
 
 # Conclusion
 
@@ -691,11 +690,15 @@ Although not causal, evidence was provided that political affiliation is importa
 
 This suggests that political discrimination might be present in the federal public sector, which can compromise the quality of the public sector personnel and, consequently, the provision of public services and goods to the general population. This, in turn, can have deep consequences to both the well-being of this population and to the development of the country. 
 
-However, due to the time restriction, there are a lot of limitations in the analysis. Therefore, more effort is necessary to infer a causal relation and to measure possible inefficiencies created by the possible patronage in the federal executive branch of the Brazilian Public Sector.
+However, due to the time restriction, there are a lot of limitations in the analysis. Therefore, more effort is necessary to infer a causal relation and to measure possible inefficiencies created by the possible patronage in the federal executive branch of the Brazilian public sector.
+
+\pagebreak
 
 # References {-}
 
 <div id="refs"></div>
+
+\pagebreak
 
 \appendix
 
@@ -703,7 +706,7 @@ However, due to the time restriction, there are a lot of limitations in the anal
 
 ## Hirings and Dismissals
 
-```{r, fig.cap="\\label{fig:compnet}Career Net Hirings"}
+```{r, fig.cap="\\label{fig:compnetapp}Career Net Hirings"}
 contratados_tipo %>%
   filter(ano != 2013,
          variable %in% c("liq_serv", "contratado_serv", "desligado_serv")) %>%
@@ -732,7 +735,7 @@ contratados_tipo %>%
 ```
 
 
-```{r, fig.cap="\\label{fig:compnet}Appointed Net Hirings"}
+```{r, fig.cap="\\label{fig:compnetapp2}Appointed Net Hirings"}
 contratados_tipo %>%
   filter(ano != 2013,
          variable %in% c("liq_conf", "contratado_conf", "desligado_conf")) %>%
@@ -835,7 +838,7 @@ contratados_filiados %>%
 ## Turnover
 
 
-```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Career Workers Affiliated to Political Party in Power"}
+```{r, fig.cap="\\label{fig:turnoverpwrapp}Turnover of Career Workers Affiliated to Political Party in Power"}
 ggplot(rotatividade_poder_serv,aes(x=ano,y=value)) + 
   geom_line(aes(group = variable, linetype = variable, color = variable),
             size = 0.8) +
@@ -858,7 +861,7 @@ ggplot(rotatividade_poder_serv,aes(x=ano,y=value)) +
              alpha = 0.5, size = 4)
 ```
 
-```{r, fig.cap="\\label{fig:turnovermerg}Turnover of Appointed Workers Affiliated to Political Party in Power"}
+```{r, fig.cap="\\label{fig:turnoverpwrapp2}Turnover of Appointed Workers Affiliated to Political Party in Power"}
 ggplot(rotatividade_poder_conf,aes(x=ano,y=value)) + 
   geom_line(aes(group = variable, linetype = variable, color = variable),
             size = 0.8) +
