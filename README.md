@@ -10,9 +10,32 @@
 
 ## Pastas
 
-/Artigo Final 
+##### `/Artigo Final`
 
 * PDF com artigo final
 
 * RMD com código do artigo
 
+##### `/Code`
+
+* Script R com o tratamento das bases
+
+##### `/Output`
+
+* Arquivos RData gerados em ##### `/Code` e utilizados pelo RMD de ##### `/Artigo Final`
+
+##### `/Papers`
+
+* Papers citados
+
+##### `/Projeto`
+
+* PDF com projeto inicial 
+
+* RMD do projeto inicial
+
+##### `/Projetos Antigos`
+
+* Projeto inicial sobre judge IV
+
+* Projeto seguinte sobre reforma trabalhista e rotatividade
