@@ -22,7 +22,7 @@
 
 ##### `/Output`
 
-* Arquivos RData gerados em ##### `/Code` e utilizados pelo RMD de ##### `/Artigo Final`
+* Arquivos RData gerados em `/Code` e utilizados pelo RMD de `/Artigo Final`
 
 ##### `/Papers`
 
