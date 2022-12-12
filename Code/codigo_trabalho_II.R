@@ -1520,6 +1520,14 @@ saveRDS(servidores_regressao, file = "servidores_regressao.rds")
 setwd("/Users/bernardoduque/Documents/Puc/Trabalho II/Trabalho Final/Output")
 servidores_regressao <- readRDS(file = "servidores_regressao.rds")
 
+#baseline de dismissals e hirings
+
+servidores_regressao %>% 
+  group_by(ano) %>%
+  filter(lag(empregado)==1) %>%
+  summarise(desligado_baseline = round(mean(desligado)*100,2),
+            contratado_baseline = round(mean(contratado)*100,2))
+
 # para desligados
 
 modelo_1 <- plm(desligado ~ poder + filiado + lag(duracao_mes,1),
